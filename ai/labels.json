@@ -1,0 +1,8 @@
+{
+  "classes": [
+    { "id": 0, "name": "other", "description": "Puntos no clasificados o que no pertenecen a suelo, pared o techo" },
+    { "id": 1, "name": "wall", "description": "Superficies verticales principales de la escena" },
+    { "id": 2, "name": "floor", "description": "Superficie horizontal inferior transitable" },
+    { "id": 3, "name": "ceiling", "description": "Superficie horizontal superior de la estancia" }
+  ]
+}
