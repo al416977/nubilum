@@ -1,0 +1,318 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NUBILUM | Proyectos</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <div class="topbar">
+      <a href="/" class="brand">NUBILUM</a>
+      <div class="nav">
+        <a href="/">Inicio</a>
+        <a href="/projects-page" class="active">Proyectos</a>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Lista de proyectos</h2>
+      <div id="projects"></div>
+    </div>
+
+    <div class="card">
+      <h2>Visor 3D</h2>
+      <p class="muted">Puedes abrir la nube rápida, la nube sin reducir o la nube por clases.</p>
+      <div class="button-row" style="align-items: center;">
+        <label for="pointSizeSlider" style="margin: 0;">Tamaño de visualización de los puntos</label>
+        <input type="range" id="pointSizeSlider" min="0.001" max="0.02" step="0.0005" value="0.006" oninput="window.updatePointSize(this.value)" style="width: 220px;" />
+        <span id="pointSizeValue">0.006</span>
+        <button onclick="window.resetViewerCamera()">Reiniciar cámara</button>
+        <button id="fullscreenBtn" onclick="window.toggleViewerFullscreen()">Pantalla completa</button>
+      </div>
+      <div id="viewerWrapper" class="viewer-wrapper">
+        <div id="viewer" class="viewer-box"></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>Información del proceso</h2>
+      <div id="output" class="output-box">Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema.</div>
+    </div>
+  </div>
+
+  <script type="importmap">
+  {
+    "imports": {
+      "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+    }
+  }
+  </script>
+
+  <script type="module">
+    import * as THREE from "three";
+    import { PLYLoader } from "three/addons/loaders/PLYLoader.js";
+    import { OrbitControls } from "three/addons/controls/OrbitControls.js";
+
+    const API_BASE = "";
+    let scene, camera, renderer, pointsObject, controls;
+    let currentPointSize = 0.006;
+
+    async function loadProjects() {
+      const projectsDiv = document.getElementById("projects");
+      projectsDiv.innerHTML = "Cargando proyectos...";
+      try {
+        const res = await fetch(`${API_BASE}/projects`);
+        const data = await res.json();
+        if (!data.projects || data.projects.length === 0) {
+          projectsDiv.innerHTML = "<p>No hay proyectos procesados todavía.</p>";
+          return;
+        }
+        projectsDiv.innerHTML = data.projects.map(project => `
+          <div class="project-card">
+            <div class="project-title">${project.name}</div>
+            <p class="helper">Proyecto procesado con archivos disponibles para visualización, clasificación y descarga.</p>
+
+            <div class="section-title">Visualizar</div>
+            <div class="actions">
+              ${project.quick_view_file ? `<button onclick="window.viewProcessedFile('${project.name}', '${project.quick_view_file}', 'nube rápida')">Ver nube rápida</button>` : ""}
+              ${project.filtered_file ? `<button onclick="window.viewProcessedFile('${project.name}', '${project.filtered_file}', 'nube sin reducir')">Ver nube sin reducir</button>` : ""}
+              ${project.pseudo_label_file ? `<button onclick="window.viewPseudoLabels('${project.name}', '${project.pseudo_label_file}')">Ver nube por clases</button>` : ""}
+            </div>
+
+            <div class="section-title">Clasificación</div>
+            <div class="actions">
+              <button onclick="window.classifyProject('${project.name}')">Generar clases</button>
+            </div>
+
+            <div class="section-title">Consultar</div>
+            <div class="actions">
+              ${project.report_file ? `<button onclick="window.loadProjectReport('${project.name}')">Ver resumen</button>` : ""}
+            </div>
+
+            <div class="section-title">Descargar</div>
+            <div class="actions">
+              ${project.quick_view_file ? `<button onclick="window.downloadProjectFile('${project.name}', '${project.quick_view_file}')">Descargar versión reducida</button>` : ""}
+              ${project.filtered_file ? `<button onclick="window.downloadProjectFile('${project.name}', '${project.filtered_file}')">Descargar nube limpia</button>` : ""}
+              ${project.report_file ? `<button onclick="window.downloadProjectFile('${project.name}', '${project.report_file}')">Descargar resumen</button>` : ""}
+            </div>
+          </div>
+        `).join("");
+      } catch (error) {
+        projectsDiv.innerHTML = `<p>Error cargando proyectos: ${error.message}</p>`;
+      }
+    }
+
+    async function loadProjectReport(projectName) {
+      const output = document.getElementById("output");
+      output.textContent = `Cargando resumen de ${projectName}...`;
+      try {
+        const res = await fetch(`${API_BASE}/report?file_stem=${encodeURIComponent(projectName)}`);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || "No se pudo cargar el resumen");
+        output.innerHTML = `
+<div class="result-compact">
+  <div><b>Proyecto:</b> ${projectName}</div><br>
+  <div><b>Archivo de entrada:</b> ${data.input_file}</div><br>
+  <div><b>Puntos originales:</b> ${data.original_points}</div>
+  <div><b>Puntos tras limpieza:</b> ${data.filtered_points}</div>
+  <div><b>Puntos en visualización:</b> ${data.quick_view_points}</div><br>
+  <div><b>Modo de visualización:</b> ${data.quick_view_mode || 'reducida'}</div>
+  <div><b>Reducción tras limpieza:</b> ${data.filter_reduction_percent}%</div>
+  <div><b>Reducción en versión visual:</b> ${data.quick_view_reduction_percent}%</div>
+</div>`;
+      } catch (error) {
+        output.textContent = `Error cargando el resumen del proyecto: ${error.message}`;
+      }
+    }
+
+    function initViewer() {
+      const container = document.getElementById("viewer");
+      scene = new THREE.Scene();
+      scene.background = new THREE.Color(0x0f172a);
+      camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 10000);
+      camera.position.set(0, 0, 50);
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+      renderer.setSize(container.clientWidth, container.clientHeight);
+      container.innerHTML = "";
+      container.appendChild(renderer.domElement);
+      controls = new OrbitControls(camera, renderer.domElement);
+      controls.enableDamping = true;
+      controls.dampingFactor = 0.05;
+      controls.screenSpacePanning = true;
+      controls.minDistance = 5;
+      controls.maxDistance = 1000;
+      const light = new THREE.DirectionalLight(0xffffff, 1);
+      light.position.set(10, 10, 10);
+      scene.add(light);
+      scene.add(new THREE.AmbientLight(0xffffff, 0.6));
+      animate();
+    }
+
+    function animate() {
+      requestAnimationFrame(animate);
+      if (controls) controls.update();
+      if (renderer && scene && camera) renderer.render(scene, camera);
+    }
+
+    function onWindowResize() {
+      const container = document.getElementById("viewer");
+      if (!container || !camera || !renderer) return;
+      camera.aspect = container.clientWidth / container.clientHeight;
+      camera.updateProjectionMatrix();
+      renderer.setSize(container.clientWidth, container.clientHeight);
+    }
+
+    function toggleViewerFullscreen() {
+      const wrapper = document.getElementById("viewerWrapper");
+      const button = document.getElementById("fullscreenBtn");
+      if (!document.fullscreenElement) {
+        wrapper.requestFullscreen().then(() => {
+          button.textContent = "Salir de pantalla completa";
+          setTimeout(() => onWindowResize(), 100);
+        });
+      } else {
+        document.exitFullscreen().then(() => {
+          button.textContent = "Pantalla completa";
+          setTimeout(() => onWindowResize(), 100);
+        });
+      }
+    }
+
+    async function fetchGeometry(url) {
+      const response = await fetch(url);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const buffer = await response.arrayBuffer();
+      const loader = new PLYLoader();
+      const geometry = loader.parse(buffer);
+      if (!geometry || !geometry.attributes || !geometry.attributes.position) {
+        throw new Error("La geometría PLY no contiene vértices válidos");
+      }
+      return geometry;
+    }
+
+    function renderGeometry(geometry, title, fileName, extraHtml = "") {
+      const output = document.getElementById("output");
+      if (!renderer) initViewer();
+      if (pointsObject) {
+        scene.remove(pointsObject);
+        pointsObject.geometry.dispose();
+        pointsObject.material.dispose();
+        pointsObject = null;
+      }
+      geometry.computeBoundingBox();
+      geometry.computeBoundingSphere();
+      geometry.center();
+      const hasColor = !!geometry.attributes.color;
+      if (hasColor) {
+        const colorAttr = geometry.attributes.color;
+        let maxValue = 0;
+        for (let i = 0; i < colorAttr.array.length; i++) maxValue = Math.max(maxValue, colorAttr.array[i]);
+        if (maxValue > 1) {
+          for (let i = 0; i < colorAttr.array.length; i++) colorAttr.array[i] = colorAttr.array[i] / 255;
+          colorAttr.needsUpdate = true;
+        }
+      }
+      const material = new THREE.PointsMaterial({ size: currentPointSize, vertexColors: hasColor, color: 0xffffff, sizeAttenuation: true });
+      pointsObject = new THREE.Points(geometry, material);
+      scene.add(pointsObject);
+      const radius = geometry.boundingSphere ? geometry.boundingSphere.radius : 10;
+      const distance = Math.max(radius * 2.2, 12);
+      camera.position.set(radius * 0.25, radius * 0.15, distance);
+      camera.near = Math.max(0.01, distance / 2000);
+      camera.far = Math.max(2000, distance * 20);
+      camera.zoom = 1.2;
+      camera.updateProjectionMatrix();
+      controls.target.set(0, 0, 0);
+      controls.update();
+      output.innerHTML = `
+<div class="result-compact">
+  <div><b>${title} cargada:</b> ${fileName}</div>
+  <div><b>Puntos cargados:</b> ${geometry.attributes.position.count}</div>
+  <div><b>Colores detectados:</b> ${hasColor ? "sí" : "no"}</div>
+  ${extraHtml}
+</div>`;
+    }
+
+    async function viewProcessedFile(projectName, fileName, label) {
+      const output = document.getElementById("output");
+      output.textContent = `Cargando ${label} de ${projectName}...`;
+      try {
+        const url = `${API_BASE}/view-file?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`;
+        const geometry = await fetchGeometry(url);
+        renderGeometry(geometry, label, fileName);
+      } catch (error) {
+        output.textContent = `Error cargando ${label} de ${projectName}: ${error.message}`;
+      }
+    }
+
+    async function viewPseudoLabels(projectName, fileName) {
+      const output = document.getElementById("output");
+      output.textContent = `Cargando nube por clases de ${projectName}...`;
+      try {
+        const url = `${API_BASE}/view-ai-file?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`;
+        const geometry = await fetchGeometry(url);
+        renderGeometry(geometry, 'nube por clases', fileName, '<div><b>Leyenda orientativa:</b> pared = rojo, suelo = verde, techo = azul, otros = gris</div>');
+      } catch (error) {
+        output.textContent = `Error cargando la nube por clases de ${projectName}: ${error.message}`;
+      }
+    }
+
+    async function classifyProject(projectName) {
+      const output = document.getElementById("output");
+      output.textContent = `Generando clases para ${projectName}...`;
+      try {
+        const res = await fetch(`${API_BASE}/classify?project=${encodeURIComponent(projectName)}`, { method: 'POST' });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.detail || 'No se pudo clasificar el proyecto');
+        const distribution = data.report.label_distribution || {};
+        output.innerHTML = `
+<div class="result-compact">
+  <div><b>Clasificación completada:</b> ${projectName}</div>
+  <div><b>Planos detectados:</b> ${data.report.planes_detected}</div>
+  <div><b>Puntos:</b> ${data.report.points}</div>
+  <div><b>Distribución:</b> ${Object.entries(distribution).map(([k,v]) => `${k}: ${v}`).join(' | ')}</div>
+  <div><b>Leyenda:</b> pared = rojo, suelo = verde, techo = azul, otros = gris</div>
+</div>`;
+        await loadProjects();
+      } catch (error) {
+        output.textContent = `Error generando clases para ${projectName}: ${error.message}`;
+      }
+    }
+
+    function downloadProjectFile(projectName, fileName) {
+      window.open(`${API_BASE}/download?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`, "_blank");
+    }
+
+    function resetViewerCamera() {
+      if (!camera || !controls) return;
+      camera.position.set(0, 0, 50);
+      controls.target.set(0, 0, 0);
+      controls.update();
+    }
+
+    function updatePointSize(newSize) {
+      currentPointSize = parseFloat(newSize);
+      const valueLabel = document.getElementById("pointSizeValue");
+      if (valueLabel) valueLabel.textContent = Number(currentPointSize).toFixed(4);
+      if (pointsObject && pointsObject.material) pointsObject.material.size = currentPointSize;
+    }
+
+    window.viewProcessedFile = viewProcessedFile;
+    window.viewPseudoLabels = viewPseudoLabels;
+    window.downloadProjectFile = downloadProjectFile;
+    window.loadProjectReport = loadProjectReport;
+    window.classifyProject = classifyProject;
+    window.resetViewerCamera = resetViewerCamera;
+    window.updatePointSize = updatePointSize;
+    window.toggleViewerFullscreen = toggleViewerFullscreen;
+
+    window.addEventListener("resize", onWindowResize);
+    document.addEventListener("fullscreenchange", onWindowResize);
+    loadProjects();
+  </script>
+</body>
+</html>

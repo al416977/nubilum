@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NUBILUM | Inicio</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="page">
+
+    <!-- =====================================================
+         BARRA SUPERIOR DE NAVEGACIÓN
+         ===================================================== -->
+    <div class="topbar">
+      <a href="/" class="brand">NUBILUM</a>
+
+      <div class="nav">
+        <a href="/" class="active">Inicio</a>
+        <a href="/projects-page">Proyectos</a>
+      </div>
+    </div>
+
+    <!-- =====================================================
+         HERO PRINCIPAL
+         ===================================================== -->
+    <div class="hero">
+      <h1>NUBILUM</h1>
+      <p class="hero-subtitle">
+        Sube, reduce, limpia y prepara nubes de puntos 3D de forma sencilla.
+        La plataforma está pensada para visualizar archivos pesados, generar
+        versiones más ligeras y dejar la nube lista para futuras tareas como
+        clasificación de superficies o división por zonas.
+      </p>
+    </div>
+
+    <!-- =====================================================
+         BLOQUES INFORMATIVOS
+         ===================================================== -->
+    <div class="info-grid">
+      <div class="info-box">
+        <h3>¿Qué puede hacer la plataforma?</h3>
+        <ul>
+          <li>Reducir una nube de puntos para que cargue más rápido.</li>
+          <li>Eliminar parte del ruido o puntos erróneos.</li>
+          <li>Visualizar una versión más ligera en 3D.</li>
+          <li>Preparar la nube para clasificar superficies como suelo, pared o techo.</li>
+          <li>Guardar el trabajo por proyectos para revisarlo más tarde.</li>
+        </ul>
+      </div>
+
+      <div class="info-box">
+        <h3>Formatos admitidos</h3>
+        <ul>
+          <li><b>.xyz</b></li>
+          <li><b>.pts</b></li>
+          <li><b>.ply</b></li>
+          <li><b>.pcd</b></li>
+          <li><b>.las</b> y <b>.laz</b> (si el lector está disponible)</li>
+        </ul>
+        <p>
+          Si el archivo incluye color RGB, la plataforma intentará conservarlo
+          en la visualización. Para una experiencia más fluida, se recomienda
+          trabajar con nubes reducidas o ya procesadas cuando el archivo sea muy grande.
+        </p>
+      </div>
+    </div>
+
+    <!-- =====================================================
+         BLOQUE DE AYUDA
+         ===================================================== -->
+    <div class="card">
+      <h2>Cómo funciona</h2>
+      <p class="muted">
+        El flujo recomendado es muy simple:
+      </p>
+      <div class="spacer-top">
+        <span class="badge">1. Subir archivo</span>
+        <span class="badge">2. Ajustar reducción y limpieza</span>
+        <span class="badge">3. Procesar</span>
+        <span class="badge">4. Ir a proyectos</span>
+      </div>
+      <p class="helper">
+        Si la nube es muy grande, empieza con una reducción media o alta.
+        Si tiene muchos puntos sueltos o errores, aumenta la limpieza del ruido.
+      </p>
+    </div>
+
+    <!-- =====================================================
+         SUBIDA DE ARCHIVO
+         ===================================================== -->
+    <div class="card">
+      <h2>Subir archivo</h2>
+      <p class="muted">
+        Aquí puedes cargar un archivo original para empezar a trabajar con él.
+        El archivo se guardará como base para su procesamiento.
+      </p>
+
+      <input type="file" id="fileInput" />
+
+      <div class="button-row">
+        <button onclick="window.uploadFile()">Subir archivo</button>
+        <a href="/projects-page" class="button-link button-secondary">Ir a proyectos procesados</a>
+      </div>
+
+      <p class="helper">
+        Esta página está pensada para la entrada del archivo y la configuración inicial.
+        La visualización 3D y la gestión de resultados estarán en la página de proyectos.
+      </p>
+    </div>
+
+    <!-- =====================================================
+         AJUSTES DEL PROCESAMIENTO
+         ===================================================== -->
+    <div class="card">
+      <h2>Ajustes del procesamiento de la nube</h2>
+      <p class="muted">
+        Estos ajustes sirven para decidir cuánto quieres simplificar la nube
+        y cuánto ruido deseas eliminar antes de visualizarla o trabajar con ella.
+      </p>
+
+      <div class="form-grid">
+        <div>
+          <label for="voxelSizeInput">Reducción de puntos</label>
+          <input
+            type="number"
+            id="voxelSizeInput"
+            min="0"
+            max="5"
+            step="0.01"
+            value="0.30"
+          />
+          <p class="helper">
+            Cuanto mayor sea el valor, menos puntos tendrá la nube y más rápido cargará. Si escribes 0, se mantendrá sin reducción.
+          </p>
+        </div>
+
+        <div>
+          <label for="nbNeighborsInput">Análisis del ruido</label>
+          <input
+            type="number"
+            id="nbNeighborsInput"
+            min="1"
+            max="100"
+            step="1"
+            value="16"
+          />
+          <p class="helper">
+            Indica cuántos puntos cercanos se comparan para decidir si un punto es anómalo.
+          </p>
+        </div>
+
+        <div>
+          <label for="stdRatioInput">Limpieza del ruido</label>
+          <input
+            type="number"
+            id="stdRatioInput"
+            min="0.1"
+            max="50"
+            step="0.1"
+            value="10.0"
+          />
+          <p class="helper">
+            Cuanto menor sea el valor, más puntos se eliminarán como ruido.
+          </p>
+        </div>
+      </div>
+    </div>
+
+    <!-- =====================================================
+         ARCHIVOS DISPONIBLES EN RAW
+         ===================================================== -->
+    <div class="card">
+      <h2>Archivos pendientes de procesar</h2>
+      <p class="muted">
+          Una vez elegidos los ajustes, aquí puedes seleccionar qué archivo original quieres procesar.
+      </p>
+
+      <div class="button-row">
+        <button onclick="window.loadFiles()">Recargar lista</button>
+      </div>
+
+      <div id="files" class="spacer-top"></div>
+    </div>
+
+    <!-- =====================================================
+         MENSAJES DE SISTEMA
+         ===================================================== -->
+    <div class="card">
+      <h2>Mensajes del sistema</h2>
+      <div id="output" class="output-box">
+Aquí aparecerán los mensajes de subida y procesamiento.
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const API_BASE ="";
+
+    function getPreprocessParams() {
+      /**
+       * Lee los valores del panel de ajustes y devuelve
+       * un objeto con parámetros listos para usar en el backend.
+       */
+      const voxelSize = parseFloat(document.getElementById("voxelSizeInput").value);
+      const nbNeighbors = parseInt(document.getElementById("nbNeighborsInput").value, 10);
+      const stdRatio = parseFloat(document.getElementById("stdRatioInput").value);
+
+      return {
+        voxel_size: isNaN(voxelSize) ? 0.30 : voxelSize,
+        nb_neighbors: isNaN(nbNeighbors) ? 16 : nbNeighbors,
+        std_ratio: isNaN(stdRatio) ? 10.0 : stdRatio
+      };
+    }
+
+    async function loadFiles() {
+      /**
+       * Carga la lista de archivos originales disponibles en data/raw.
+       * Cada archivo puede procesarse desde esta misma página.
+       */
+      const filesDiv = document.getElementById("files");
+      filesDiv.innerHTML = "Cargando archivos...";
+
+      try {
+        const res = await fetch(`${API_BASE}/files`);
+        const data = await res.json();
+
+        if (!data.files || data.files.length === 0) {
+          filesDiv.innerHTML = "<p>No hay archivos pendientes de procesar.</p>";
+          return;
+        }
+
+        filesDiv.innerHTML = data.files.map(file => `
+          <div class="file-row">
+            <div>
+              <b>${file}</b>
+              <div class="helper">
+                Archivo original listo para procesar.
+              </div>
+            </div>
+
+            <div class="actions">
+              <button onclick="window.runPreprocess('${file}')">Procesar archivo</button>
+            </div>
+          </div>
+        `).join("");
+      } catch (error) {
+        filesDiv.innerHTML = `<p>Error cargando archivos: ${error.message}</p>`;
+      }
+    }
+
+    async function uploadFile() {
+      /**
+       * Sube un archivo desde el navegador al backend.
+       */
+      const input = document.getElementById("fileInput");
+      const output = document.getElementById("output");
+
+      if (!input.files || input.files.length === 0) {
+        output.textContent = "Selecciona un archivo antes de subirlo.";
+        return;
+      }
+
+      const file = input.files[0];
+      const formData = new FormData();
+      formData.append("file", file);
+
+      output.textContent = `Subiendo ${file.name}...`;
+
+      try {
+        const res = await fetch(`${API_BASE}/upload`, {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.detail || "No se pudo subir el archivo");
+        }
+
+        output.innerHTML = `
+<b>Archivo subido correctamente</b>
+
+Nombre: ${file.name}
+
+Siguiente paso recomendado:
+1. Ajustar el procesamiento de la nube.
+2. Pulsar en "Procesar archivo" desde la lista de archivos pendientes.
+3. Ir a la página de proyectos para visualizar el resultado.
+        `;
+
+        loadFiles();
+      } catch (error) {
+        output.textContent = `Error subiendo archivo: ${error.message}`;
+      }
+    }
+
+    async function runPreprocess(fileName) {
+      /**
+       * Lanza el preprocesado del archivo seleccionado con los parámetros elegidos.
+       */
+      const output = document.getElementById("output");
+      output.textContent = `Procesando ${fileName}...`;
+
+      const params = getPreprocessParams();
+
+      const url =
+        `${API_BASE}/preprocess` +
+        `?file_name=${encodeURIComponent(fileName)}` +
+        `&voxel_size=${encodeURIComponent(params.voxel_size)}` +
+        `&nb_neighbors=${encodeURIComponent(params.nb_neighbors)}` +
+        `&std_ratio=${encodeURIComponent(params.std_ratio)}`;
+
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.detail || "Error desconocido en el procesamiento");
+        }
+
+        output.innerHTML = `
+<b>Procesamiento completado</b>
+
+Proyecto generado: ${data.project}
+Archivo de entrada: ${data.report.input_file}
+
+Resumen:
+- Puntos originales: ${data.report.original_points}
+- Puntos filtrados: ${data.report.filtered_points}
+- Puntos en versión reducida: ${data.report.quick_view_points}
+
+Parámetros usados:
+- Reducción de puntos: ${data.report.parameters.voxel_size} (${data.report.quick_view_mode})
+- Análisis del ruido: ${data.report.parameters.nb_neighbors}
+- Limpieza del ruido: ${data.report.parameters.std_ratio}
+
+Siguiente paso recomendado:
+- Ir a la página "Proyectos" para visualizar la versión reducida,
+  consultar el resumen o descargar los archivos generados.
+        `;
+      } catch (error) {
+        output.textContent = `Error en el procesamiento: ${error.message}`;
+      }
+    }
+
+    loadFiles();
+
+    window.uploadFile = uploadFile;
+    window.loadFiles = loadFiles;
+    window.runPreprocess = runPreprocess;
+  </script>
+</body>
+</html>
