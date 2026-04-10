@@ -131,7 +131,7 @@
             value="0.30"
           />
           <p class="helper">
-            Cuanto mayor sea el valor, menos puntos tendrá la nube y más rápido cargará. Si escribes 0, se mantendrá sin reducción.
+            Cuanto mayor sea el valor, menos puntos tendrá la nube y más rápido cargará.
           </p>
         </div>
 
@@ -298,9 +298,6 @@ Siguiente paso recomendado:
     }
 
     async function runPreprocess(fileName) {
-      /**
-       * Lanza el preprocesado del archivo seleccionado con los parámetros elegidos.
-       */
       const output = document.getElementById("output");
       output.textContent = `Procesando ${fileName}...`;
 
@@ -315,36 +312,45 @@ Siguiente paso recomendado:
 
       try {
         const res = await fetch(url);
-        const data = await res.json();
+
+        const rawText = await res.text();
+        let data = {};
+
+        try {
+          data = rawText ? JSON.parse(rawText) : {};
+        } catch {
+          data = { detail: rawText || `Respuesta vacía del servidor (HTTP ${res.status})` };
+        }
 
         if (!res.ok) {
-          throw new Error(data.detail || "Error desconocido en el procesamiento");
+          throw new Error(data.detail || `Error desconocido en el procesamiento (HTTP ${res.status})`);
         }
 
         output.innerHTML = `
-<b>Procesamiento completado</b>
+    <b>Procesamiento completado</b>
 
-Proyecto generado: ${data.project}
-Archivo de entrada: ${data.report.input_file}
+    Proyecto generado: ${data.project}
+    Archivo de entrada: ${data.report.input_file}
 
-Resumen:
-- Puntos originales: ${data.report.original_points}
-- Puntos filtrados: ${data.report.filtered_points}
-- Puntos en versión reducida: ${data.report.quick_view_points}
+    Resumen:
+    - Puntos originales: ${data.report.original_points}
+    - Puntos filtrados: ${data.report.filtered_points}
+    - Puntos en versión reducida: ${data.report.quick_view_points}
 
-Parámetros usados:
-- Reducción de puntos: ${data.report.parameters.voxel_size} (${data.report.quick_view_mode})
-- Análisis del ruido: ${data.report.parameters.nb_neighbors}
-- Limpieza del ruido: ${data.report.parameters.std_ratio}
+    Parámetros usados:
+    - Reducción de puntos: ${data.report.parameters.voxel_size}
+    - Análisis del ruido: ${data.report.parameters.nb_neighbors}
+    - Limpieza del ruido: ${data.report.parameters.std_ratio}
 
-Siguiente paso recomendado:
-- Ir a la página "Proyectos" para visualizar la versión reducida,
-  consultar el resumen o descargar los archivos generados.
+    Siguiente paso recomendado:
+    - Ir a la página "Proyectos" para visualizar la versión reducida,
+      consultar el resumen o descargar los archivos generados.
         `;
       } catch (error) {
         output.textContent = `Error en el procesamiento: ${error.message}`;
       }
     }
+    </script>
 
     loadFiles();
 
