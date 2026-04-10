@@ -157,6 +157,10 @@ def get_report(file_stem: str):
 @app.get("/download")
 def download_file(project: str, file_name: str):
     file_path = PROCESSED_DIR / project / file_name
+    print(f"[DOWNLOAD] project={project}")
+    print(f"[DOWNLOAD] file_name={file_name}")
+    print(f"[DOWNLOAD] file_path={file_path}")
+    print(f"[DOWNLOAD] exists={file_path.exists()}")
 
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="No existe el archivo solicitado")
@@ -167,12 +171,15 @@ def download_file(project: str, file_name: str):
 @app.get("/view-file")
 def view_file(project: str, file_name: str):
     file_path = PROCESSED_DIR / project / file_name
+    print(f"[VIEW_FILE] project={project}")
+    print(f"[VIEW_FILE] file_name={file_name}")
+    print(f"[VIEW_FILE] file_path={file_path}")
+    print(f"[VIEW_FILE] exists={file_path.exists()}")
 
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="No existe el archivo solicitado")
 
     return FileResponse(path=file_path, media_type="application/octet-stream")
-
 
 @app.get("/projects")
 def list_projects():
@@ -211,8 +218,26 @@ def list_projects():
 @app.get("/view-ai-file")
 def view_ai_file(project: str, file_name: str):
     file_path = AI_DIR / project / file_name
+    print(f"[VIEW_AI_FILE] project={project}")
+    print(f"[VIEW_AI_FILE] file_name={file_name}")
+    print(f"[VIEW_AI_FILE] file_path={file_path}")
+    print(f"[VIEW_AI_FILE] exists={file_path.exists()}")
 
     if not file_path.exists():
         raise HTTPException(status_code=404, detail="No existe el archivo de anotación solicitado")
 
     return FileResponse(path=file_path, media_type="application/octet-stream")
+
+
+@app.get("/download-ai-file")
+def download_ai_file(project: str, file_name: str):
+    file_path = AI_DIR / project / file_name
+    print(f"[DOWNLOAD_AI] project={project}")
+    print(f"[DOWNLOAD_AI] file_name={file_name}")
+    print(f"[DOWNLOAD_AI] file_path={file_path}")
+    print(f"[DOWNLOAD_AI] exists={file_path.exists()}")
+
+    if not file_path.exists():
+        raise HTTPException(status_code=404, detail="No existe el archivo de anotación solicitado")
+
+    return FileResponse(path=file_path, filename=file_name)
