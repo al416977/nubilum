@@ -146,6 +146,9 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
               ${project.pseudo_label_file
                 ? `<button onclick="window.viewPseudoLabels('${project.name}', '${project.pseudo_label_file}')">Ver nube por clases</button>`
                 : ""}
+              ${project.pseudo_label_file
+                ? `<button onclick="window.downloadAIFile('${project.name}', '${project.pseudo_label_file}')">Descargar nube por clases</button>`
+                : ""}
             </div>
 
             <div class="section-title">Consultar</div>
@@ -337,7 +340,10 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
           });
       }
     }
-
+    function downloadAIFile(projectName, fileName) {
+      const url = `${API_BASE}/download-ai-file?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`;
+      window.open(url, "_blank");
+    }
     async function viewProjectQuickView(projectName, fileName) {
       /**
        * Carga la versión reducida del proyecto en el visor 3D.
@@ -675,6 +681,7 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
     window.updatePointSize = updatePointSize;
     window.resetViewerCamera = resetViewerCamera;
     window.viewPseudoLabels = viewPseudoLabels;
+    window.downloadAIFile = downloadAIFile;
   </script>
 </body>
 </html>
