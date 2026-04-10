@@ -95,18 +95,26 @@ def preprocess(
     std_ratio: float = 10.0
 ):
     try:
+        print(f"[PREPROCESS] Iniciando: file_name={file_name}, voxel_size={voxel_size}, nb_neighbors={nb_neighbors}, std_ratio={std_ratio}")
         result = run_preprocess(
             file_name=file_name,
             voxel_size=voxel_size,
             nb_neighbors=nb_neighbors,
             std_ratio=std_ratio
         )
+        print(f"[PREPROCESS] Completado: {file_name}")
         return result
     except FileNotFoundError as e:
+        print(f"[PREPROCESS] FileNotFoundError: {e}")
+        traceback.print_exc()
         raise HTTPException(status_code=404, detail=str(e))
     except ValueError as e:
+        print(f"[PREPROCESS] ValueError: {e}")
+        traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
+        print(f"[PREPROCESS] Error inesperado: {e}")
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/classify")
