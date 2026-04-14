@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>NUBILUM | Inicio</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <div class="page">
+    <header class="topbar topbar-strong">
+      <a href="/" class="brand-wrap">
+        <span class="brand-mark">N</span>
+        <span class="brand-text">
+          <strong>NUBILUM</strong>
+          <small>Procesado y visualización de nubes de puntos</small>
+        </span>
+      </a>
+
+      <nav class="nav nav-pills">
+        <a href="/" class="active">Inicio</a>
+        <a href="/projects-page">Proyectos</a>
+      </nav>
+    </header>
+
+    <section class="hero-panel">
+      <div class="hero-copy">
+        <span class="eyebrow">MVP para clasificación y preparación de edificios</span>
+        <h1>Sube una nube de puntos y sigue trabajando proyecto a proyecto.</h1>
+        <p class="hero-subtitle hero-subtitle-left">
+          NUBILUM está pensado para un flujo muy claro: cargar el archivo,
+          ajustar limpieza y reducción, procesarlo y abrirlo después en una
+          biblioteca de proyectos con visor 3D.
+        </p>
+
+        <div class="button-row button-row-hero">
+          <a href="#upload-section" class="button-link">Subir archivo</a>
+          <a href="/projects-page" class="button-link button-secondary">Abrir proyectos existentes</a>
+        </div>
+
+        <div class="hero-mini-grid">
+          <div class="mini-stat-card">
+            <span class="mini-stat-label">Objetivo</span>
+            <strong>Entrada rápida</strong>
+            <p>Subir archivo o continuar uno ya procesado.</p>
+          </div>
+          <div class="mini-stat-card">
+            <span class="mini-stat-label">Fase actual</span>
+            <strong>Preprocesado + visor</strong>
+            <p>Base lista para seguir mejorando clasificación y UX.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-side">
+        <div class="hero-side-card hero-side-accent">
+          <h3>Qué se puede hacer ya</h3>
+          <ul class="feature-list">
+            <li>Subir archivos originales.</li>
+            <li>Reducir nube con voxelización.</li>
+            <li>Limpiar ruido con filtro estadístico.</li>
+            <li>Guardar resultados por proyecto.</li>
+            <li>Abrir el resultado más tarde en la biblioteca.</li>
+          </ul>
+        </div>
+
+        <div class="hero-side-card">
+          <h3>Flujo recomendado</h3>
+          <div class="chip-row">
+            <span class="badge">1. Subir</span>
+            <span class="badge">2. Ajustar</span>
+            <span class="badge">3. Procesar</span>
+            <span class="badge">4. Visualizar</span>
+          </div>
+          <p class="helper helper-light">
+            Para archivos muy pesados, usa una reducción media o alta antes de abrir el visor.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section class="stats-grid" id="overviewStats">
+      <article class="stat-card">
+        <span class="stat-label">Archivos pendientes</span>
+        <strong id="rawCount">-</strong>
+        <p>Modelos originales cargados y listos para procesar.</p>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Proyectos existentes</span>
+        <strong id="projectCount">-</strong>
+        <p>Resultados ya guardados en la biblioteca.</p>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Con clasificación</span>
+        <strong id="classifiedCount">-</strong>
+        <p>Proyectos con nube coloreada por clases.</p>
+      </article>
+    </section>
+
+    <section class="grid-two-columns">
+      <div class="card card-strong" id="upload-section">
+        <div class="section-header">
+          <div>
+            <span class="section-kicker">Entrada</span>
+            <h2>Subir archivo nuevo</h2>
+          </div>
+        </div>
+
+        <p class="muted">
+          El archivo original se guardará como base del proyecto. Después podrás
+          procesarlo y abrirlo desde la página de proyectos.
+        </p>
+
+        <label for="fileInput" class="upload-dropzone" id="uploadDropzone">
+          <input type="file" id="fileInput" />
+          <span class="upload-dropzone-title">Haz clic para elegir archivo</span>
+          <span class="upload-dropzone-subtitle">Formatos: .xyz, .pts, .ply, .pcd, .las, .laz</span>
+          <span class="upload-file-name" id="selectedFileName">Ningún archivo seleccionado</span>
+        </label>
+
+        <div class="button-row">
+          <button onclick="window.uploadFile()">Subir archivo</button>
+          <a href="/projects-page" class="button-link button-secondary">Ir a proyectos</a>
+        </div>
+      </div>
+
+      <div class="card card-strong">
+        <div class="section-header">
+          <div>
+            <span class="section-kicker">Continuar trabajo</span>
+            <h2>Biblioteca rápida</h2>
+          </div>
+        </div>
+
+        <p class="muted">
+          Acceso directo a archivos todavía sin procesar y a proyectos ya creados.
+        </p>
+
+        <div class="library-preview-block">
+          <div class="library-preview-title">Archivos pendientes</div>
+          <div id="rawPreview" class="preview-list compact-list">Cargando...</div>
+        </div>
+
+        <div class="library-preview-block">
+          <div class="library-preview-title">Últimos proyectos</div>
+          <div id="projectPreview" class="preview-list compact-list">Cargando...</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header section-header-spaced">
+        <div>
+          <span class="section-kicker">Configuración</span>
+          <h2>Ajustes del procesamiento</h2>
+        </div>
+      </div>
+
+      <p class="muted">
+        Estos valores definen cuánto quieres simplificar la nube y cuánta limpieza de ruido aplicar.
+      </p>
+
+      <div class="form-grid">
+        <div class="form-card">
+          <label for="voxelSizeInput">Reducción de puntos</label>
+          <input type="number" id="voxelSizeInput" min="0" max="5" step="0.01" value="0.30" />
+          <p class="helper">Cuanto mayor sea el valor, menos puntos tendrá la nube y más ligera será la visualización.</p>
+        </div>
+
+        <div class="form-card">
+          <label for="nbNeighborsInput">Análisis del ruido</label>
+          <input type="number" id="nbNeighborsInput" min="1" max="100" step="1" value="16" />
+          <p class="helper">Número de vecinos usados para decidir si un punto es anómalo.</p>
+        </div>
+
+        <div class="form-card">
+          <label for="stdRatioInput">Limpieza del ruido</label>
+          <input type="number" id="stdRatioInput" min="0.1" max="50" step="0.1" value="10.0" />
+          <p class="helper">Cuanto menor sea el valor, más agresiva será la limpieza.</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="section-header section-header-spaced">
+        <div>
+          <span class="section-kicker">Procesamiento</span>
+          <h2>Archivos listos para procesar</h2>
+        </div>
+        <div class="button-row button-row-tight">
+          <button class="button-secondary" onclick="window.loadFiles()">Recargar lista</button>
+        </div>
+      </div>
+
+      <div id="files" class="stack-list"></div>
+    </section>
+
+    <section class="card">
+      <div class="section-header">
+        <div>
+          <span class="section-kicker">Mensajes</span>
+          <h2>Estado del sistema</h2>
+        </div>
+      </div>
+      <div id="output" class="output-box">Aquí aparecerán los mensajes de subida y procesamiento.</div>
+    </section>
+  </div>
+
+  <script>
+    const API_BASE = "";
+
+    function getPreprocessParams() {
+      const voxelSize = parseFloat(document.getElementById("voxelSizeInput").value);
+      const nbNeighbors = parseInt(document.getElementById("nbNeighborsInput").value, 10);
+      const stdRatio = parseFloat(document.getElementById("stdRatioInput").value);
+
+      return {
+        voxel_size: isNaN(voxelSize) ? 0.30 : voxelSize,
+        nb_neighbors: isNaN(nbNeighbors) ? 16 : nbNeighbors,
+        std_ratio: isNaN(stdRatio) ? 10.0 : stdRatio
+      };
+    }
+
+    function setOutput(message, isHtml = false) {
+      const output = document.getElementById("output");
+      if (isHtml) {
+        output.innerHTML = message;
+      } else {
+        output.textContent = message;
+      }
+    }
+
+    function updateSelectedFileName() {
+      const input = document.getElementById("fileInput");
+      const label = document.getElementById("selectedFileName");
+      if (!input.files || input.files.length === 0) {
+        label.textContent = "Ningún archivo seleccionado";
+        return;
+      }
+      const file = input.files[0];
+      const sizeMb = (file.size / (1024 * 1024)).toFixed(2);
+      label.textContent = `${file.name} · ${sizeMb} MB`;
+    }
+
+    async function loadOverview() {
+      try {
+        const [filesRes, projectsRes] = await Promise.all([
+          fetch(`${API_BASE}/files`),
+          fetch(`${API_BASE}/projects`)
+        ]);
+
+        const filesData = await filesRes.json();
+        const projectsData = await projectsRes.json();
+
+        const rawFiles = filesData.files || [];
+        const projects = projectsData.projects || [];
+        const classified = projects.filter(project => !!project.pseudo_label_file);
+
+        document.getElementById("rawCount").textContent = rawFiles.length;
+        document.getElementById("projectCount").textContent = projects.length;
+        document.getElementById("classifiedCount").textContent = classified.length;
+
+        document.getElementById("rawPreview").innerHTML = rawFiles.length
+          ? rawFiles.slice(0, 4).map(file => `
+              <div class="preview-item">
+                <div>
+                  <strong>${file}</strong>
+                  <p>Archivo original pendiente de procesar</p>
+                </div>
+                <button onclick="window.runPreprocess('${file.replace(/'/g, "\\'")}')">Procesar</button>
+              </div>
+            `).join("")
+          : `<div class="empty-state-inline">No hay archivos pendientes.</div>`;
+
+        document.getElementById("projectPreview").innerHTML = projects.length
+          ? projects.slice(0, 4).map(project => `
+              <div class="preview-item">
+                <div>
+                  <strong>${project.name}</strong>
+                  <p>${project.pseudo_label_file ? "Con clasificación disponible" : "Procesado pendiente de clasificar"}</p>
+                </div>
+                <a href="/projects-page" class="button-link button-secondary">Abrir</a>
+              </div>
+            `).join("")
+          : `<div class="empty-state-inline">Todavía no hay proyectos procesados.</div>`;
+      } catch (error) {
+        document.getElementById("rawPreview").innerHTML = `<div class="empty-state-inline">No se pudo cargar la vista rápida.</div>`;
+        document.getElementById("projectPreview").innerHTML = `<div class="empty-state-inline">No se pudo cargar la vista rápida.</div>`;
+      }
+    }
+
+    async function loadFiles() {
+      const filesDiv = document.getElementById("files");
+      filesDiv.innerHTML = `<div class="empty-state-inline">Cargando archivos...</div>`;
+
+      try {
+        const res = await fetch(`${API_BASE}/files`);
+        const data = await res.json();
+
+        if (!data.files || data.files.length === 0) {
+          filesDiv.innerHTML = `<div class="empty-state-inline">No hay archivos pendientes de procesar.</div>`;
+          return;
+        }
+
+        filesDiv.innerHTML = data.files.map(file => `
+          <article class="file-row file-row-strong">
+            <div class="file-row-copy">
+              <strong>${file}</strong>
+              <p>Archivo original listo para procesar con los parámetros actuales.</p>
+            </div>
+            <div class="actions actions-end">
+              <button onclick="window.runPreprocess('${file.replace(/'/g, "\\'")}')">Procesar archivo</button>
+            </div>
+          </article>
+        `).join("");
+      } catch (error) {
+        filesDiv.innerHTML = `<div class="empty-state-inline">Error cargando archivos: ${error.message}</div>`;
+      }
+    }
+
+    async function uploadFile() {
+      const input = document.getElementById("fileInput");
+
+      if (!input.files || input.files.length === 0) {
+        setOutput("Selecciona primero un archivo.");
+        return;
+      }
+
+      const formData = new FormData();
+      formData.append("file", input.files[0]);
+
+      setOutput(`Subiendo archivo ${input.files[0].name}...`);
+
+      try {
+        const res = await fetch(`${API_BASE}/upload`, {
+          method: "POST",
+          body: formData
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.detail || "No se pudo subir el archivo");
+        }
+
+        setOutput(`Archivo subido correctamente: ${data.file_name}`);
+        input.value = "";
+        updateSelectedFileName();
+        loadFiles();
+        loadOverview();
+      } catch (error) {
+        setOutput(`Error al subir archivo: ${error.message}`);
+      }
+    }
+
+    async function runPreprocess(fileName) {
+      const params = getPreprocessParams();
+      setOutput(`Procesando ${fileName}... Esto puede tardar unos segundos.`);
+
+      const query = new URLSearchParams({
+        file_name: fileName,
+        voxel_size: params.voxel_size,
+        nb_neighbors: params.nb_neighbors,
+        std_ratio: params.std_ratio
+      });
+
+      try {
+        const res = await fetch(`${API_BASE}/preprocess?${query.toString()}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.detail || "No se pudo procesar el archivo");
+        }
+
+        setOutput(`
+          <div class="result-compact">
+            <div><b>Proyecto generado:</b> ${data.project}</div>
+            <div><b>Archivo de entrada:</b> ${data.report.input_file}</div>
+            <div><b>Puntos originales:</b> ${data.report.original_points}</div>
+            <div><b>Puntos tras limpieza:</b> ${data.report.filtered_points}</div>
+            <div><b>Puntos en quick view:</b> ${data.report.quick_view_points}</div>
+            <div><b>Reducción quick view:</b> ${data.report.quick_view_reduction_percent}%</div>
+            <div class="spacer-top"><a href="/projects-page" class="inline-link">Abrir proyecto en la biblioteca</a></div>
+          </div>
+        `, true);
+
+        loadFiles();
+        loadOverview();
+      } catch (error) {
+        setOutput(`Error procesando ${fileName}: ${error.message}`);
+      }
+    }
+
+    document.getElementById("fileInput").addEventListener("change", updateSelectedFileName);
+    loadFiles();
+    loadOverview();
+
+    window.uploadFile = uploadFile;
+    window.loadFiles = loadFiles;
+    window.runPreprocess = runPreprocess;
+  </script>
+</body>
+</html>
