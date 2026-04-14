@@ -7,87 +7,135 @@
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-  <div class="page">
-
-    <!-- =====================================================
-         BARRA SUPERIOR DE NAVEGACIÓN
-         ===================================================== -->
-    <div class="topbar">
-      <a href="/" class="brand">NUBILUM</a>
-      <nav>
+  <div class="page page-wide">
+    <header class="topbar topbar-strong">
+      <a href="/" class="brand-wrap">
+        <span class="brand-mark">N</span>
+        <span class="brand-text">
+          <strong>NUBILUM</strong>
+          <small>Biblioteca de proyectos</small>
+        </span>
+      </a>
+      <nav class="nav nav-pills">
         <a href="/">Inicio</a>
         <a href="/projects-page" class="active">Proyectos</a>
       </nav>
-    </div>
+    </header>
 
-    <!-- =====================================================
-         CABECERA DE LA PÁGINA
-         ===================================================== -->
-    <div class="card">
-      <h2>Proyectos procesados</h2>
-      <p class="muted">
-          Aquí puedes abrir los resultados generados para cada proyecto,
-          visualizar la nube con sus colores originales, verla por colores según las clases obtenidas,
-          consultar el resumen del proceso y descargar los archivos disponibles.
-      </p>
-
-      <div class="button-row">
-        <button onclick="window.loadProjects()">Recargar proyectos</button>
-        <a href="./index.html" class="button-link button-secondary">Volver a la subida de archivos</a>
+    <section class="hero-panel hero-panel-compact">
+      <div class="hero-copy">
+        <span class="eyebrow">Biblioteca de resultados</span>
+        <h1>Abre, revisa y visualiza cada proyecto desde un único panel.</h1>
+        <p class="hero-subtitle hero-subtitle-left">
+          Desde aquí puedes abrir nubes limpias, versiones reducidas, ejecutar la
+          clasificación actual y descargar los archivos generados.
+        </p>
       </div>
-    </div>
-
-    <!-- =====================================================
-         LISTA DE PROYECTOS
-         ===================================================== -->
-    <div class="card">
-      <h2>Lista de proyectos</h2>
-      <div id="projects"></div>
-    </div>
-
-    <!-- =====================================================
-         VISOR 3D
-         ===================================================== -->
-    <div class="card">
-      <h2>Visor 3D</h2>
-      <p class="muted">
-        Aquí puedes explorar visualmente la nube cargada, ya sea con sus colores originales
-  o coloreada según las clases detectadas. Si la ves demasiado pequeña o demasiado densa,
-  ajusta el tamaño de visualización de los puntos.
-      </p>
-
-      <div class="button-row" style="align-items: center;">
-        <label for="pointSizeSlider" style="margin: 0;">Tamaño de visualización de los puntos</label>
-        <input
-          type="range"
-          id="pointSizeSlider"
-          min="0.001"
-          max="0.02"
-          step="0.0005"
-          value="0.006"
-          oninput="window.updatePointSize(this.value)"
-          style="width: 220px;"
-        />
-        <span id="pointSizeValue">0.006</span>
-        <button onclick="window.resetViewerCamera()">Reiniciar cámara</button>
-        <button id="fullscreenBtn" onclick="window.toggleViewerFullscreen()">Pantalla completa</button>
+      <div class="hero-side">
+        <div class="hero-side-card">
+          <h3>Acciones principales</h3>
+          <div class="chip-row">
+            <span class="badge">Visualizar</span>
+            <span class="badge">Clasificar</span>
+            <span class="badge">Descargar</span>
+            <span class="badge">Revisar resumen</span>
+          </div>
+        </div>
       </div>
+    </section>
 
-      <div id="viewerWrapper" class="viewer-wrapper">
-        <div id="viewer" class="viewer-box"></div>
-      </div>
-      </div>
+    <section class="stats-grid">
+      <article class="stat-card">
+        <span class="stat-label">Total proyectos</span>
+        <strong id="projectCount">-</strong>
+        <p>Proyectos procesados disponibles en disco.</p>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Con clasificación</span>
+        <strong id="classifiedCount">-</strong>
+        <p>Proyectos con nube por clases lista para abrir.</p>
+      </article>
+      <article class="stat-card">
+        <span class="stat-label">Pendientes</span>
+        <strong id="pendingClassificationCount">-</strong>
+        <p>Procesados pero todavía sin clasificación generada.</p>
+      </article>
+    </section>
 
-    <!-- =====================================================
-         MENSAJES DEL SISTEMA
-         ===================================================== -->
-    <div class="card">
-      <h2>Información del proceso</h2>
-      <div id="output" class="output-box">
-Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema.
-      </div>
-    </div>
+    <section class="workspace-grid">
+      <aside class="workspace-sidebar">
+        <div class="card card-fullheight">
+          <div class="section-header section-header-spaced">
+            <div>
+              <span class="section-kicker">Explorar</span>
+              <h2>Lista de proyectos</h2>
+            </div>
+            <button class="button-secondary" onclick="window.loadProjects()">Recargar</button>
+          </div>
 
+          <input type="text" id="projectSearch" placeholder="Buscar proyecto..." class="search-input" />
+
+          <div id="projects" class="project-list"></div>
+        </div>
+      </aside>
+
+      <main class="workspace-main">
+        <div class="card">
+          <div class="section-header section-header-spaced">
+            <div>
+              <span class="section-kicker">Detalle</span>
+              <h2 id="activeProjectTitle">Selecciona un proyecto</h2>
+            </div>
+            <div class="button-row button-row-tight">
+              <a href="/" class="button-link button-secondary">Subir nuevo archivo</a>
+            </div>
+          </div>
+
+          <div id="activeProjectSummary" class="project-summary-empty">
+            Elige un proyecto de la izquierda para ver sus acciones disponibles.
+          </div>
+        </div>
+
+        <div class="card viewer-card">
+          <div class="section-header section-header-spaced">
+            <div>
+              <span class="section-kicker">Visualización</span>
+              <h2>Visor 3D</h2>
+            </div>
+          </div>
+
+          <p class="muted">
+            Ajusta el tamaño de los puntos y usa la pantalla completa si necesitas revisar mejor la geometría.
+          </p>
+
+          <div class="viewer-toolbar">
+            <div class="slider-group">
+              <label for="pointSizeSlider">Tamaño de puntos</label>
+              <input type="range" id="pointSizeSlider" min="0.001" max="0.02" step="0.0005" value="0.006" oninput="window.updatePointSize(this.value)" />
+              <span id="pointSizeValue">0.006</span>
+            </div>
+            <div class="button-row button-row-tight">
+              <button class="button-secondary" onclick="window.resetViewerCamera()">Reiniciar cámara</button>
+              <button id="fullscreenBtn" class="button-secondary" onclick="window.toggleViewerFullscreen()">Pantalla completa</button>
+            </div>
+          </div>
+
+          <div id="viewerWrapper" class="viewer-wrapper">
+            <div id="viewer" class="viewer-box"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-header">
+            <div>
+              <span class="section-kicker">Mensajes</span>
+              <h2>Información del proceso</h2>
+            </div>
+          </div>
+          <div id="output" class="output-box">Aquí aparecerán los mensajes, resúmenes y errores del sistema.</div>
+        </div>
+      </main>
+    </section>
   </div>
 
   <script type="importmap">
@@ -105,170 +153,217 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
     import { OrbitControls } from "three/addons/controls/OrbitControls.js";
 
     const API_BASE = "";
-    
+    let allProjects = [];
+    let selectedProject = null;
+
+    function setOutput(message, isHtml = false) {
+      const output = document.getElementById("output");
+      if (isHtml) {
+        output.innerHTML = message;
+      } else {
+        output.textContent = message;
+      }
+    }
+
+    function renderProjectStats(projects) {
+      const classified = projects.filter(project => !!project.pseudo_label_file).length;
+      document.getElementById("projectCount").textContent = projects.length;
+      document.getElementById("classifiedCount").textContent = classified;
+      document.getElementById("pendingClassificationCount").textContent = Math.max(projects.length - classified, 0);
+    }
+
+    function buildProjectActions(project) {
+      return `
+        <div class="project-detail-grid">
+          <div class="project-detail-card">
+            <span class="detail-label">Estado</span>
+            <strong>${project.pseudo_label_file ? "Clasificación disponible" : "Pendiente de clasificar"}</strong>
+            <p>${project.quick_view_file ? "Quick view disponible" : "Sin quick view"}</p>
+          </div>
+          <div class="project-detail-card">
+            <span class="detail-label">Archivos</span>
+            <strong>${[project.filtered_file, project.quick_view_file, project.report_file, project.pseudo_label_file].filter(Boolean).length}</strong>
+            <p>Recursos asociados al proyecto.</p>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="section-title">Visualizar</div>
+          <div class="actions">
+            ${project.quick_view_file ? `<button onclick="window.viewProcessedFile('${project.name}', '${project.quick_view_file}', 'quick view')">Ver quick view</button>` : ""}
+            ${project.filtered_file ? `<button onclick="window.viewProcessedFile('${project.name}', '${project.filtered_file}', 'nube filtrada')">Ver nube filtrada</button>` : ""}
+            ${project.pseudo_label_file ? `<button onclick="window.viewPseudoLabels('${project.name}', '${project.pseudo_label_file}')">Ver nube por clases</button>` : ""}
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="section-title">Proceso</div>
+          <div class="actions">
+            <button class="button-secondary" onclick="window.loadProjectReport('${project.name}')">Ver resumen</button>
+            <button onclick="window.classifyProject('${project.name}')">Generar clases</button>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="section-title">Descargas</div>
+          <div class="actions">
+            ${project.quick_view_file ? `<button class="button-secondary" onclick="window.downloadProjectFile('${project.name}', '${project.quick_view_file}')">Descargar quick view</button>` : ""}
+            ${project.filtered_file ? `<button class="button-secondary" onclick="window.downloadProjectFile('${project.name}', '${project.filtered_file}')">Descargar nube filtrada</button>` : ""}
+            ${project.report_file ? `<button class="button-secondary" onclick="window.downloadProjectFile('${project.name}', '${project.report_file}')">Descargar resumen</button>` : ""}
+            ${project.pseudo_label_file ? `<button class="button-secondary" onclick="window.downloadAIFile('${project.name}', '${project.pseudo_label_file}')">Descargar nube por clases</button>` : ""}
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <div class="section-title">Archivos disponibles</div>
+          <ul class="project-files">
+            ${project.filtered_file ? `<li>${project.filtered_file}</li>` : ""}
+            ${project.quick_view_file ? `<li>${project.quick_view_file}</li>` : ""}
+            ${project.report_file ? `<li>${project.report_file}</li>` : ""}
+            ${project.pseudo_label_file ? `<li>${project.pseudo_label_file}</li>` : ""}
+          </ul>
+        </div>
+      `;
+    }
+
+    function setActiveProject(project) {
+      selectedProject = project;
+      document.getElementById("activeProjectTitle").textContent = project.name;
+      document.getElementById("activeProjectSummary").innerHTML = buildProjectActions(project);
+
+      document.querySelectorAll(".project-list-item").forEach(item => {
+        item.classList.toggle("active", item.dataset.projectName === project.name);
+      });
+    }
+
+    function renderProjectList(projects) {
+      const container = document.getElementById("projects");
+      if (!projects.length) {
+        container.innerHTML = `<div class="empty-state-inline">No hay proyectos procesados todavía.</div>`;
+        document.getElementById("activeProjectTitle").textContent = "Selecciona un proyecto";
+        document.getElementById("activeProjectSummary").textContent = "Elige un proyecto de la izquierda para ver sus acciones disponibles.";
+        return;
+      }
+
+      container.innerHTML = projects.map(project => `
+        <button class="project-list-item ${selectedProject && selectedProject.name === project.name ? "active" : ""}" data-project-name="${project.name}" onclick="window.openProject('${project.name}')">
+          <div class="project-list-item-top">
+            <strong>${project.name}</strong>
+            <span class="project-status ${project.pseudo_label_file ? "project-status-ready" : "project-status-pending"}">
+              ${project.pseudo_label_file ? "Clasificado" : "Pendiente"}
+            </span>
+          </div>
+          <p>${project.quick_view_file ? "Quick view disponible" : "Sin quick view"}</p>
+        </button>
+      `).join("");
+    }
+
     async function loadProjects() {
-      /**
-       * Carga todos los proyectos procesados desde el backend
-       * y los muestra como tarjetas.
-       */
       const projectsDiv = document.getElementById("projects");
-      projectsDiv.innerHTML = "Cargando proyectos...";
+      projectsDiv.innerHTML = `<div class="empty-state-inline">Cargando proyectos...</div>`;
 
       try {
         const res = await fetch(`${API_BASE}/projects`);
         const data = await res.json();
+        allProjects = data.projects || [];
 
-        if (!data.projects || data.projects.length === 0) {
-          projectsDiv.innerHTML = "<p>No hay proyectos procesados todavía.</p>";
-          return;
+        renderProjectStats(allProjects);
+        applySearch();
+
+        if (allProjects.length && !selectedProject) {
+          setActiveProject(allProjects[0]);
+        } else if (selectedProject) {
+          const refreshed = allProjects.find(project => project.name === selectedProject.name);
+          if (refreshed) {
+            setActiveProject(refreshed);
+          }
         }
-
-        projectsDiv.innerHTML = data.projects.map(project => `
-          <div class="project-card">
-            <div class="project-title">${project.name}</div>
-
-            <p class="helper">
-              Proyecto procesado con archivos disponibles para visualización, consulta y descarga.
-            </p>
-
-            <div class="section-title">Visualizar</div>
-            <div class="actions">
-              ${project.quick_view_file
-                ? `<button onclick="window.viewProjectQuickView('${project.name}', '${project.quick_view_file}')">Ver nube con colores originales</button>`
-                : ""}
-              ${project.quick_view_file
-                ? `<button onclick="window.viewProcessedFile('${project.name}', '${project.quick_view_file}', 'nube rápida')">Ver nube rápida</button>`
-                : ""}
-              ${project.filtered_file
-                ? `<button onclick="window.viewProcessedFile('${project.name}', '${project.filtered_file}', 'nube sin reducir')">Ver nube sin reducir</button>`
-                : ""}
-              <button onclick="window.classifyProject('${project.name}')">Generar clases</button>
-              ${project.pseudo_label_file
-                ? `<button onclick="window.viewPseudoLabels('${project.name}', '${project.pseudo_label_file}')">Ver nube por clases</button>`
-                : ""}
-              ${project.pseudo_label_file
-                ? `<button onclick="window.downloadAIFile('${project.name}', '${project.pseudo_label_file}')">Descargar nube por clases</button>`
-                : ""}
-            </div>
-
-            <div class="section-title">Consultar</div>
-            <div class="actions">
-              <button onclick="window.loadProjectReport('${project.name}')">Ver resumen</button>
-            </div>
-
-            <div class="section-title">Descargar</div>
-            <div class="actions">
-              ${project.quick_view_file
-                ? `<button onclick="window.downloadProjectFile('${project.name}', '${project.quick_view_file}')">Descargar versión reducida</button>`
-                : ""}
-
-              ${project.filtered_file
-                ? `<button onclick="window.downloadProjectFile('${project.name}', '${project.filtered_file}')">Descargar nube limpia</button>`
-                : ""}
-
-              ${project.report_file
-                ? `<button onclick="window.downloadProjectFile('${project.name}', '${project.report_file}')">Descargar resumen</button>`
-                : ""}
-            </div>
-
-            <div class="section-title">Archivos disponibles</div>
-            <ul class="project-files">
-              ${project.filtered_file ? `<li>${project.filtered_file}</li>` : ""}
-              ${project.quick_view_file ? `<li>${project.quick_view_file}</li>` : ""}
-              ${project.report_file ? `<li>${project.report_file}</li>` : ""}
-              ${project.pseudo_label_file ? `<li>${project.pseudo_label_file}</li>` : ""}
-            </ul>
-          </div>
-        `).join("");
       } catch (error) {
-        projectsDiv.innerHTML = `<p>Error cargando proyectos: ${error.message}</p>`;
+        projectsDiv.innerHTML = `<div class="empty-state-inline">Error cargando proyectos: ${error.message}</div>`;
+      }
+    }
+
+    function applySearch() {
+      const search = document.getElementById("projectSearch").value.trim().toLowerCase();
+      const filtered = allProjects.filter(project => project.name.toLowerCase().includes(search));
+      renderProjectList(filtered);
+
+      if (filtered.length) {
+        if (!selectedProject || !filtered.some(project => project.name === selectedProject.name)) {
+          setActiveProject(filtered[0]);
+        }
       }
     }
 
     async function loadProjectReport(projectName) {
-    const output = document.getElementById("output");
-    output.textContent = `Cargando resumen de ${projectName}...`;
-
-    try {
-      const res = await fetch(`${API_BASE}/report?file_stem=${encodeURIComponent(projectName)}`);
-      const data = await res.json();
-
-      if (!res.ok) {
-        throw new Error(data.detail || "No se pudo cargar el resumen");
-      }
-
-      output.innerHTML = `
-  <div class="result-compact">
-    <div><b>Proyecto:</b> ${projectName}</div><br>
-
-    <div><b>Archivo de entrada:</b> ${data.input_file}</div><br>
-
-    <div><b>Puntos originales:</b> ${data.original_points}</div>
-    <div><b>Puntos tras limpieza:</b> ${data.filtered_points}</div>
-    <div><b>Puntos en versión reducida:</b> ${data.quick_view_points}</div><br>
-
-    <div><b>Reducción tras limpieza:</b> ${data.filter_reduction_percent}%</div>
-    <div><b>Reducción en versión reducida:</b> ${data.quick_view_reduction_percent}%</div>
-  </div>
-      `;
-    } catch (error) {
-      output.textContent = `Error cargando el resumen del proyecto: ${error.message}`;
-    }
-  }
-
-  window.classifyProject = async function(projectName) {
-    const output = document.getElementById("output");
-    output.textContent = `Generando clases para ${projectName}...`;
-
-    try {
-      const res = await fetch(`${API_BASE}/classify?project=${encodeURIComponent(projectName)}`, {
-        method: "POST"
-      });
-
-      const rawText = await res.text();
-      let data = {};
+      setOutput(`Cargando resumen de ${projectName}...`);
 
       try {
-        data = rawText ? JSON.parse(rawText) : {};
-      } catch {
-        data = { detail: rawText || `Respuesta vacía del servidor (HTTP ${res.status})` };
+        const res = await fetch(`${API_BASE}/report?file_stem=${encodeURIComponent(projectName)}`);
+        const data = await res.json();
+
+        if (!res.ok) {
+          throw new Error(data.detail || "No se pudo cargar el resumen");
+        }
+
+        setOutput(`
+          <div class="result-compact">
+            <div><b>Proyecto:</b> ${projectName}</div><br>
+            <div><b>Archivo de entrada:</b> ${data.input_file}</div><br>
+            <div><b>Puntos originales:</b> ${data.original_points}</div>
+            <div><b>Puntos tras limpieza:</b> ${data.filtered_points}</div>
+            <div><b>Puntos en quick view:</b> ${data.quick_view_points}</div><br>
+            <div><b>Reducción tras limpieza:</b> ${data.filter_reduction_percent}%</div>
+            <div><b>Reducción quick view:</b> ${data.quick_view_reduction_percent}%</div>
+          </div>
+        `, true);
+      } catch (error) {
+        setOutput(`Error cargando el resumen del proyecto: ${error.message}`);
       }
-
-      if (!res.ok) {
-        throw new Error(data.detail || `Error al clasificar (HTTP ${res.status})`);
-      }
-
-      output.innerHTML = `
-  <b>Clasificación completada</b>
-
-  Proyecto: ${projectName}
-
-  Ya puedes recargar la lista y abrir la nube por clases.
-      `;
-
-      loadProjects();
-    } catch (error) {
-      output.textContent = `Error generando clases para ${projectName}: ${error.message}`;
     }
-  };
 
-  let scene, camera, renderer, pointsObject, controls;
-  let currentPointSize = 0.006;
+    async function classifyProject(projectName) {
+      setOutput(`Generando clases para ${projectName}...`);
+
+      try {
+        const res = await fetch(`${API_BASE}/classify?project=${encodeURIComponent(projectName)}`, { method: "POST" });
+        const rawText = await res.text();
+        let data = {};
+
+        try {
+          data = rawText ? JSON.parse(rawText) : {};
+        } catch {
+          data = { detail: rawText || `Respuesta vacía del servidor (HTTP ${res.status})` };
+        }
+
+        if (!res.ok) {
+          throw new Error(data.detail || `Error al clasificar (HTTP ${res.status})`);
+        }
+
+        setOutput(`
+          <div class="result-compact">
+            <div><b>Clasificación completada</b></div>
+            <div><b>Proyecto:</b> ${projectName}</div>
+            <div><b>Clases detectadas:</b> pared, suelo, techo y otros</div>
+          </div>
+        `, true);
+
+        await loadProjects();
+      } catch (error) {
+        setOutput(`Error generando clases para ${projectName}: ${error.message}`);
+      }
+    }
+
+    let scene, camera, renderer, pointsObject, controls;
+    let currentPointSize = 0.006;
+
     function initViewer() {
-      /**
-       * Inicializa la escena 3D con Three.js.
-       */
       const container = document.getElementById("viewer");
 
       scene = new THREE.Scene();
-      scene.background = new THREE.Color(0x0f172a);
+      scene.background = new THREE.Color(0x08111f);
 
-      camera = new THREE.PerspectiveCamera(
-        60,
-        container.clientWidth / container.clientHeight,
-        0.1,
-        10000
-      );
+      camera = new THREE.PerspectiveCamera(60, container.clientWidth / container.clientHeight, 0.1, 10000);
       camera.position.set(0, 0, 50);
 
       renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -292,7 +387,7 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
       light.position.set(10, 10, 10);
       scene.add(light);
 
-      const ambient = new THREE.AmbientLight(0xffffff, 0.6);
+      const ambient = new THREE.AmbientLight(0xffffff, 0.65);
       scene.add(ambient);
 
       animate();
@@ -300,374 +395,178 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
 
     function animate() {
       requestAnimationFrame(animate);
-
-      if (controls) {
-        controls.update();
-      }
-
+      if (controls) controls.update();
       renderer.render(scene, camera);
     }
 
     function onWindowResize() {
       const container = document.getElementById("viewer");
       if (!container || !camera || !renderer) return;
-
       camera.aspect = container.clientWidth / container.clientHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
     }
+
     function toggleViewerFullscreen() {
       const wrapper = document.getElementById("viewerWrapper");
       const button = document.getElementById("fullscreenBtn");
 
       if (!document.fullscreenElement) {
-        wrapper.requestFullscreen()
-          .then(() => {
-            button.textContent = "Salir de pantalla completa";
-            setTimeout(() => onWindowResize(), 100);
-          })
-          .catch(err => {
-            console.error("No se pudo activar pantalla completa:", err);
-          });
+        wrapper.requestFullscreen().then(() => {
+          button.textContent = "Salir de pantalla completa";
+          setTimeout(() => onWindowResize(), 100);
+        }).catch(err => console.error("No se pudo activar pantalla completa:", err));
       } else {
-        document.exitFullscreen()
-          .then(() => {
-            button.textContent = "Pantalla completa";
-            setTimeout(() => onWindowResize(), 100);
-          })
-          .catch(err => {
-            console.error("No se pudo salir de pantalla completa:", err);
-          });
+        document.exitFullscreen().then(() => {
+          button.textContent = "Pantalla completa";
+          setTimeout(() => onWindowResize(), 100);
+        }).catch(err => console.error("No se pudo salir de pantalla completa:", err));
       }
     }
-    function downloadAIFile(projectName, fileName) {
-      const url = `${API_BASE}/download-ai-file?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`;
-      window.open(url, "_blank");
-    }
-    async function viewProjectQuickView(projectName, fileName) {
-      /**
-       * Carga la versión reducida del proyecto en el visor 3D.
-       */
-      const output = document.getElementById("output");
-      output.textContent = `Cargando versión reducida de ${projectName}...`;
 
-      try {
-        if (!renderer) {
-          initViewer();
-        }
-
-        const url = `${API_BASE}/view-file?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`;
-        const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const buffer = await response.arrayBuffer();
-        const loader = new PLYLoader();
-        const geometry = loader.parse(buffer);
-
-        if (!geometry || !geometry.attributes || !geometry.attributes.position) {
-          throw new Error("La geometría PLY no contiene vértices válidos");
-        }
-
-        if (pointsObject) {
-          scene.remove(pointsObject);
-          pointsObject.geometry.dispose();
-          pointsObject.material.dispose();
-          pointsObject = null;
-        }
-
-        geometry.computeBoundingBox();
-        geometry.computeBoundingSphere();
-        geometry.center();
-
-        const hasColor = !!geometry.attributes.color;
-        if (hasColor) {
-          const colorAttr = geometry.attributes.color;
-          let maxValue = 0;
-
-          for (let i = 0; i < colorAttr.array.length; i++) {
-            if (colorAttr.array[i] > maxValue) {
-              maxValue = colorAttr.array[i];
-            }
-          }
-
-          if (maxValue > 1) {
-            for (let i = 0; i < colorAttr.array.length; i++) {
-              colorAttr.array[i] = colorAttr.array[i] / 255;
-            }
-            colorAttr.needsUpdate = true;
-          }
-        }
-        const material = new THREE.PointsMaterial({
-          size: currentPointSize,
-          vertexColors: hasColor,
-          color: 0xffffff,
-          sizeAttenuation: true
-        });
-
-        pointsObject = new THREE.Points(geometry, material);
-        scene.add(pointsObject);
-
-        const radius = geometry.boundingSphere ? geometry.boundingSphere.radius : 10;
-        const distance = Math.max(radius * 2.2, 12);
-
-        camera.position.set(radius * 0.25, radius * 0.15, distance);
-        camera.near = Math.max(0.01, distance / 2000);
-        camera.far = Math.max(2000, distance * 20);
-        camera.zoom = 1.2;
-        camera.updateProjectionMatrix();
-
-        if (controls) {
-          controls.target.set(0, 0, 0);
-          controls.update();
-        }
-
-        output.innerHTML = `
-<div class="result-compact">
-  <div><b>Nube con colores originales cargada:</b> ${projectName}</div>
-  <div><b>Archivo:</b> ${fileName}</div>
-  <div><b>Puntos cargados:</b> ${geometry.attributes.position.count}</div>
-  <div><b>Colores detectados:</b> ${hasColor ? "sí" : "no"}</div>
-</div>        
-    `;
-      } catch (error) {
-        output.textContent = `Error cargando la nube con colores originales de ${projectName}: ${error.message}`;
+    function normalizeGeometryColors(geometry) {
+      const hasColor = !!geometry.attributes.color;
+      if (!hasColor) return false;
+      const colorAttr = geometry.attributes.color;
+      let maxValue = 0;
+      for (let i = 0; i < colorAttr.array.length; i++) {
+        if (colorAttr.array[i] > maxValue) maxValue = colorAttr.array[i];
       }
+      if (maxValue > 1) {
+        for (let i = 0; i < colorAttr.array.length; i++) {
+          colorAttr.array[i] = colorAttr.array[i] / 255;
+        }
+        colorAttr.needsUpdate = true;
+      }
+      return true;
     }
+
+    function applyGeometryToViewer(geometry, label, fileName, projectName, extraText = "") {
+      if (!geometry || !geometry.attributes || !geometry.attributes.position) {
+        throw new Error("La geometría PLY no contiene vértices válidos");
+      }
+
+      if (pointsObject) {
+        scene.remove(pointsObject);
+        pointsObject.geometry.dispose();
+        pointsObject.material.dispose();
+        pointsObject = null;
+      }
+
+      geometry.computeBoundingBox();
+      geometry.computeBoundingSphere();
+      geometry.center();
+
+      const hasColor = normalizeGeometryColors(geometry);
+      const material = new THREE.PointsMaterial({
+        size: currentPointSize,
+        vertexColors: hasColor,
+        color: 0xffffff,
+        sizeAttenuation: true
+      });
+
+      pointsObject = new THREE.Points(geometry, material);
+      scene.add(pointsObject);
+
+      const radius = geometry.boundingSphere ? geometry.boundingSphere.radius : 10;
+      const distance = Math.max(radius * 2.2, 12);
+      camera.position.set(radius * 0.25, radius * 0.15, distance);
+      camera.near = Math.max(0.01, distance / 2000);
+      camera.far = Math.max(2000, distance * 20);
+      camera.zoom = 1.2;
+      camera.updateProjectionMatrix();
+
+      if (controls) {
+        controls.target.set(0, 0, 0);
+        controls.update();
+      }
+
+      setOutput(`
+        <div class="result-compact">
+          <div><b>${label} cargada:</b> ${projectName}</div>
+          <div><b>Archivo:</b> ${fileName}</div>
+          <div><b>Puntos cargados:</b> ${geometry.attributes.position.count}</div>
+          <div><b>Colores detectados:</b> ${hasColor ? "sí" : "no"}</div>
+          ${extraText ? `<div><b>Info:</b> ${extraText}</div>` : ""}
+        </div>
+      `, true);
+    }
+
     async function viewProcessedFile(projectName, fileName, label = "archivo procesado") {
-      const output = document.getElementById("output");
-      output.textContent = `Cargando ${label} de ${projectName}...`;
-
+      setOutput(`Cargando ${label} de ${projectName}...`);
       try {
-        if (!renderer) {
-          initViewer();
-        }
-
+        if (!renderer) initViewer();
         const url = `${API_BASE}/view-file?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`;
         const response = await fetch(url);
-
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const buffer = await response.arrayBuffer();
         const loader = new PLYLoader();
         const geometry = loader.parse(buffer);
-
-        if (!geometry || !geometry.attributes || !geometry.attributes.position) {
-          throw new Error("La geometría PLY no contiene vértices válidos");
-        }
-
-        if (pointsObject) {
-          scene.remove(pointsObject);
-          pointsObject.geometry.dispose();
-          pointsObject.material.dispose();
-          pointsObject = null;
-        }
-
-        geometry.computeBoundingBox();
-        geometry.computeBoundingSphere();
-        geometry.center();
-
-        const hasColor = !!geometry.attributes.color;
-        if (hasColor) {
-          const colorAttr = geometry.attributes.color;
-          let maxValue = 0;
-
-          for (let i = 0; i < colorAttr.array.length; i++) {
-            if (colorAttr.array[i] > maxValue) {
-              maxValue = colorAttr.array[i];
-            }
-          }
-
-          if (maxValue > 1) {
-            for (let i = 0; i < colorAttr.array.length; i++) {
-              colorAttr.array[i] = colorAttr.array[i] / 255;
-            }
-            colorAttr.needsUpdate = true;
-          }
-        }
-
-        const material = new THREE.PointsMaterial({
-          size: currentPointSize,
-          vertexColors: hasColor,
-          color: 0xffffff,
-          sizeAttenuation: true
-        });
-
-        pointsObject = new THREE.Points(geometry, material);
-        scene.add(pointsObject);
-
-        const radius = geometry.boundingSphere ? geometry.boundingSphere.radius : 10;
-        const distance = Math.max(radius * 2.2, 12);
-
-        camera.position.set(radius * 0.25, radius * 0.15, distance);
-        camera.near = Math.max(0.01, distance / 2000);
-        camera.far = Math.max(2000, distance * 20);
-        camera.zoom = 1.2;
-        camera.updateProjectionMatrix();
-
-        if (controls) {
-          controls.target.set(0, 0, 0);
-          controls.update();
-        }
-
-        output.innerHTML = `
-    <div class="result-compact">
-      <div><b>${label} cargada:</b> ${projectName}</div>
-      <div><b>Archivo:</b> ${fileName}</div>
-      <div><b>Puntos cargados:</b> ${geometry.attributes.position.count}</div>
-      <div><b>Colores detectados:</b> ${hasColor ? "sí" : "no"}</div>
-    </div>
-        `;
+        applyGeometryToViewer(geometry, label, fileName, projectName);
       } catch (error) {
-        output.textContent = `Error cargando ${label} de ${projectName}: ${error.message}`;
+        setOutput(`Error cargando ${label} de ${projectName}: ${error.message}`);
       }
     }
-    window.viewProcessedFile = viewProcessedFile;
 
     function viewPseudoLabels(projectName, fileName) {
-      /**
-       * Carga el archivo de pseudoetiquetas o clasificación de superficies.
-       */
-      const output = document.getElementById("output");
-      output.textContent = `Cargando nube por clases de ${projectName}...`;
-
+      setOutput(`Cargando nube por clases de ${projectName}...`);
       try {
-        if (!renderer) {
-          initViewer();
-        }
-
+        if (!renderer) initViewer();
         const url = `${API_BASE}/view-ai-file?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`;
         const loader = new PLYLoader();
-
         loader.load(
           url,
-          function (geometry) {
-            if (!geometry || !geometry.attributes || !geometry.attributes.position) {
-              throw new Error("La geometría PLY no contiene vértices válidos");
-            }
-
-            if (pointsObject) {
-              scene.remove(pointsObject);
-              pointsObject.geometry.dispose();
-              pointsObject.material.dispose();
-              pointsObject = null;
-            }
-
-            geometry.computeBoundingBox();
-            geometry.computeBoundingSphere();
-            geometry.center();
-
-            const hasColor = !!geometry.attributes.color;
-            if (hasColor) {
-              const colorAttr = geometry.attributes.color;
-              let maxValue = 0;
-
-              for (let i = 0; i < colorAttr.array.length; i++) {
-                if (colorAttr.array[i] > maxValue) {
-                  maxValue = colorAttr.array[i];
-                }
-              }
-
-              if (maxValue > 1) {
-                for (let i = 0; i < colorAttr.array.length; i++) {
-                  colorAttr.array[i] = colorAttr.array[i] / 255;
-                }
-                colorAttr.needsUpdate = true;
-              }
-            }
-            const material = new THREE.PointsMaterial({
-              size: currentPointSize,
-              vertexColors: hasColor,
-              color: 0xffffff,
-              sizeAttenuation: true
-            });
-
-            pointsObject = new THREE.Points(geometry, material);
-            scene.add(pointsObject);
-
-            const radius = geometry.boundingSphere ? geometry.boundingSphere.radius : 10;
-            const distance = Math.max(radius * 2.2, 12);
-
-            camera.position.set(radius * 0.25, radius * 0.15, distance);
-            camera.near = Math.max(0.01, distance / 2000);
-            camera.far = Math.max(2000, distance * 20);
-            camera.zoom = 1.2;
-            camera.updateProjectionMatrix();
-
-            if (controls) {
-              controls.target.set(0, 0, 0);
-              controls.update();
-            }
-
-            output.innerHTML = `
-<div class="result-compact">
-  <div><b>Nube por clases cargada:</b> ${projectName}</div>
-  <div><b>Archivo:</b> ${fileName}</div>
-  <div><b>Puntos cargados:</b> ${geometry.attributes.position.count}</div>
-  <div><b>Colores detectados:</b> ${hasColor ? "sí" : "no"}</div>
-  <div><b>Leyenda orientativa:</b> pared = rojo, suelo = verde, techo = azul, otros = gris</div>
-</div>
-`;
-          },
+          geometry => applyGeometryToViewer(geometry, "nube por clases", fileName, projectName, "pared = rojo, suelo = verde, techo = azul, otros = gris"),
           undefined,
-          function (error) {
-            output.textContent = `Error cargando la nube por clases de ${projectName}.`;
-            console.error(error);
+          error => {
+            setOutput(`Error cargando la nube por clases de ${projectName}: ${error?.message || error}`);
+            console.error("Error PLY clases:", error);
           }
         );
       } catch (error) {
-        output.textContent = `Error cargando la nube por clases de ${projectName}: ${error.message}`;
+        setOutput(`Error cargando la nube por clases de ${projectName}: ${error.message}`);
       }
     }
 
     function downloadProjectFile(projectName, fileName) {
-      /**
-       * Descarga un archivo asociado al proyecto.
-       */
       const url = `${API_BASE}/download?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`;
       window.open(url, "_blank");
     }
 
-    function resetViewerCamera() {
-      /**
-       * Reinicia la cámara a una vista general.
-       */
-      if (!camera || !controls) return;
+    function downloadAIFile(projectName, fileName) {
+      const url = `${API_BASE}/download-ai-file?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`;
+      window.open(url, "_blank");
+    }
 
+    function resetViewerCamera() {
+      if (!camera || !controls) return;
       camera.position.set(0, 0, 50);
       controls.target.set(0, 0, 0);
       controls.update();
     }
 
     function updatePointSize(newSize) {
-      /**
-       * Cambia el tamaño visual de los puntos cargados.
-       */
       currentPointSize = parseFloat(newSize);
-
-      const valueLabel = document.getElementById("pointSizeValue");
-      if (valueLabel) {
-        valueLabel.textContent = currentPointSize.toFixed(3);
-      }
-
+      document.getElementById("pointSizeValue").textContent = currentPointSize.toFixed(3);
       if (pointsObject && pointsObject.material) {
         pointsObject.material.size = currentPointSize;
         pointsObject.material.needsUpdate = true;
       }
     }
 
+    function openProject(projectName) {
+      const project = allProjects.find(item => item.name === projectName);
+      if (project) setActiveProject(project);
+    }
+
+    document.getElementById("projectSearch").addEventListener("input", applySearch);
+
     initViewer();
     window.addEventListener("resize", onWindowResize);
     document.addEventListener("fullscreenchange", () => {
       const button = document.getElementById("fullscreenBtn");
       if (button) {
-        button.textContent = document.fullscreenElement
-          ? "Salir de pantalla completa"
-          : "Pantalla completa";
+        button.textContent = document.fullscreenElement ? "Salir de pantalla completa" : "Pantalla completa";
       }
       setTimeout(() => onWindowResize(), 100);
     });
@@ -676,12 +575,14 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
     window.loadProjects = loadProjects;
     window.loadProjectReport = loadProjectReport;
     window.downloadProjectFile = downloadProjectFile;
-    window.viewProjectQuickView = viewProjectQuickView;
     window.toggleViewerFullscreen = toggleViewerFullscreen;
     window.updatePointSize = updatePointSize;
     window.resetViewerCamera = resetViewerCamera;
     window.viewPseudoLabels = viewPseudoLabels;
     window.downloadAIFile = downloadAIFile;
+    window.classifyProject = classifyProject;
+    window.viewProcessedFile = viewProcessedFile;
+    window.openProject = openProject;
   </script>
 </body>
 </html>
