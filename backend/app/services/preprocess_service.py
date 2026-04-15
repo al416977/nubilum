@@ -99,8 +99,14 @@ def load_point_cloud(file_path: Path):
     # ------------------------------------------------------------
     # Resto de formatos o fallback general de Open3D
     # ------------------------------------------------------------
-    pcd = o3d.io.read_point_cloud(str(file_path))
-    return pcd
+    def load_pts_manual(file_path):
+        data = np.loadtxt(file_path, skiprows=1)
+        xyz = data[:, :3]
+
+        pcd = o3d.geometry.PointCloud()
+        pcd.points = o3d.utility.Vector3dVector(xyz)
+
+        return pcd
 
 
 def center_point_cloud(pcd: o3d.geometry.PointCloud):
