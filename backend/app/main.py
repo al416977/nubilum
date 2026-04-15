@@ -23,8 +23,10 @@ RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
 PROCESSED_DIR.mkdir(parents=True, exist_ok=True)
+
 AI_DIR = BASE_DIR / "ai" / "raw_annotations"
 AI_DIR.mkdir(parents=True, exist_ok=True)
+
 app = FastAPI()
 
 app.add_middleware(
@@ -39,6 +41,10 @@ app.add_middleware(
 app.mount("/static", StaticFiles(directory=FRONTEND_DIR), name="static")
 
 
+# =====================================================
+# PÁGINAS HTML
+# =====================================================
+
 @app.get("/", response_class=HTMLResponse)
 def serve_index():
     return (FRONTEND_DIR / "index.html").read_text(encoding="utf-8")
@@ -49,10 +55,23 @@ def serve_projects_page():
     return (FRONTEND_DIR / "projects.html").read_text(encoding="utf-8")
 
 
+@app.get("/upload-page", response_class=HTMLResponse)
+def serve_upload_page():
+    return (FRONTEND_DIR / "upload.html").read_text(encoding="utf-8")
+
+
+# =====================================================
+# HEALTHCHECK
+# =====================================================
+
 @app.get("/health")
 def health():
     return {"ok": True}
 
+
+# =====================================================
+# ARCHIVOS CRUDOS
+# =====================================================
 
 @app.get("/files")
 def list_files():
@@ -87,6 +106,10 @@ def upload_file(file: UploadFile = File(...)):
     }
 
 
+# =====================================================
+# PREPROCESADO
+# =====================================================
+
 @app.get("/preprocess")
 def preprocess(
     file_name: str,
@@ -95,27 +118,43 @@ def preprocess(
     std_ratio: float = 10.0
 ):
     try:
-        print(f"[PREPROCESS] Iniciando: file_name={file_name}, voxel_size={voxel_size}, nb_neighbors={nb_neighbors}, std_ratio={std_ratio}")
+        print(
+            f"[PREPROCESS] Iniciando: "
+            f"file_name={file_name}, "
+            f"voxel_size={voxel_size}, "
+            f"nb_neighbors={nb_neighbors}, "
+            f"std_ratio={std_ratio}"
+        )
+
         result = run_preprocess(
             file_name=file_name,
             voxel_size=voxel_size,
             nb_neighbors=nb_neighbors,
             std_ratio=std_ratio
         )
+
         print(f"[PREPROCESS] Completado: {file_name}")
         return result
+
     except FileNotFoundError as e:
         print(f"[PREPROCESS] FileNotFoundError: {e}")
         traceback.print_exc()
         raise HTTPException(status_code=404, detail=str(e))
+
     except ValueError as e:
         print(f"[PREPROCESS] ValueError: {e}")
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
+
     except Exception as e:
         print(f"[PREPROCESS] Error inesperado: {e}")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
+
+
+# =====================================================
+# CLASIFICACIÓN
+# =====================================================
 
 @app.post("/classify")
 def classify(project: str):
@@ -123,24 +162,33 @@ def classify(project: str):
         print(f"[CLASSIFY] Iniciando clasificación para: {project}")
         report = classify_project(project)
         print(f"[CLASSIFY] Clasificación completada para: {project}")
+
         return {
             "message": "Clasificación completada",
             "project": project,
             "report": report
         }
+
     except FileNotFoundError as e:
         print(f"[CLASSIFY] FileNotFoundError en {project}: {e}")
         traceback.print_exc()
         raise HTTPException(status_code=404, detail=str(e))
+
     except ValueError as e:
         print(f"[CLASSIFY] ValueError en {project}: {e}")
         traceback.print_exc()
         raise HTTPException(status_code=400, detail=str(e))
+
     except Exception as e:
         print(f"[CLASSIFY] Error inesperado en {project}: {e}")
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+
+# =====================================================
+# INFORMES
+# =====================================================
+
 @app.get("/report")
 def get_report(file_stem: str):
     report_path = PROCESSED_DIR / file_stem / f"{file_stem}_report.json"
@@ -153,6 +201,10 @@ def get_report(file_stem: str):
 
     return data
 
+
+# =====================================================
+# DESCARGA / VISUALIZACIÓN DE ARCHIVOS PROCESADOS
+# =====================================================
 
 @app.get("/download")
 def download_file(project: str, file_name: str):
@@ -181,10 +233,13 @@ def view_file(project: str, file_name: str):
 
     return FileResponse(path=file_path, media_type="application/octet-stream")
 
+
+# =====================================================
+# PROYECTOS
+# =====================================================
+
 @app.get("/projects")
 def list_projects():
-    ai_dir = AI_DIR
-
     if not PROCESSED_DIR.exists():
         return {"projects": []}
 
@@ -200,7 +255,7 @@ def list_projects():
             pseudo_label_file = f"{project_name}_labeled_colored.ply"
             class_report_file = f"{project_name}_classification_report.json"
 
-            ai_project_dir = ai_dir / project_name
+            ai_project_dir = AI_DIR / project_name
 
             projects.append({
                 "name": project_name,
@@ -214,6 +269,10 @@ def list_projects():
     projects.sort(key=lambda x: x["name"].lower())
     return {"projects": projects}
 
+
+# =====================================================
+# ARCHIVOS IA / CLASIFICACIÓN
+# =====================================================
 
 @app.get("/view-ai-file")
 def view_ai_file(project: str, file_name: str):
