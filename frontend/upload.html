@@ -27,11 +27,8 @@
          CABECERA
          ===================================================== -->
     <div class="upload-page-header">
-      <h1>Subir archivo nuevo</h1>
-      <p>
-        Selecciona una nube de puntos, súbela al sistema y aplica el
-        preprocesado real de Nubilum.
-      </p>
+      <h1>Subir Archivo Nuevo</h1>
+      <p>Selecciona un archivo de nube de puntos y configura los parámetros de procesado</p>
     </div>
 
     <!-- =====================================================
@@ -47,12 +44,8 @@
 
           <label for="fileInput" class="upload-dropzone">
             <div class="upload-dropzone-icon">↑</div>
-            <div class="upload-dropzone-title">
-              Haz clic para seleccionar un archivo
-            </div>
-            <div class="upload-dropzone-subtitle">
-              Formatos permitidos: .xyz, .pts, .ply, .pcd, .las, .laz
-            </div>
+            <div class="upload-dropzone-title">Arrastra un archivo o haz clic para seleccionar</div>
+            <div class="upload-dropzone-subtitle">Formatos soportados: LAS, LAZ, E57, PTS, XYZ</div>
           </label>
 
           <input type="file" id="fileInput" hidden />
@@ -106,45 +99,42 @@
       <!-- COLUMNA DERECHA -->
       <aside class="upload-sidebar">
 
-        <div class="card">
-          <h3>Guía rápida</h3>
-          <div class="info-list">
-            <div class="info-item">
-              <strong>Subida</strong>
-              <span>Primero sube el archivo original al sistema.</span>
+        <div class="card upload-side-card">
+          <h3>📄 Formatos Admitidos</h3>
+
+          <div class="upload-format-list">
+            <div class="upload-format-item">
+              <strong>.LAS</strong>
+              <span>Formato estándar de nubes de puntos</span>
             </div>
-            <div class="info-item">
-              <strong>Preprocesado</strong>
-              <span>Se aplicará la reducción y limpieza con los parámetros indicados.</span>
+
+            <div class="upload-format-item">
+              <strong>.LAZ</strong>
+              <span>LAS comprimido</span>
             </div>
-            <div class="info-item">
-              <strong>Siguiente paso</strong>
-              <span>Después podrás abrirlo desde la página de proyectos.</span>
+
+            <div class="upload-format-item">
+              <strong>.E57</strong>
+              <span>Formato de intercambio 3D</span>
+            </div>
+
+            <div class="upload-format-item">
+              <strong>.PTS</strong>
+              <span>Puntos ASCII</span>
+            </div>
+
+            <div class="upload-format-item">
+              <strong>.XYZ</strong>
+              <span>Coordenadas simples</span>
             </div>
           </div>
-        </div>
 
-        <div class="card">
-          <h3>Parámetros</h3>
-          <div class="info-list">
-            <div class="info-item">
-              <strong>voxel_size</strong>
-              <span>Reduce el número de puntos de la nube.</span>
-            </div>
-            <div class="info-item">
-              <strong>nb_neighbors</strong>
-              <span>Controla el filtrado estadístico.</span>
-            </div>
-            <div class="info-item">
-              <strong>std_ratio</strong>
-              <span>Ajusta la tolerancia al ruido.</span>
-            </div>
+          <div class="upload-limit-box">
+            Tamaño máximo: 10 GB por archivo
           </div>
         </div>
 
       </aside>
-    </div>
-  </div>
 
   <script>
     const fileInput = document.getElementById("fileInput");

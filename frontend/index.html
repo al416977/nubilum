@@ -7,91 +7,61 @@
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-  <div class="page">
+  <div class="landing-page">
 
-    <!-- =====================================================
-         BARRA SUPERIOR DE NAVEGACIÓN
-         ===================================================== -->
-    <div class="topbar">
-      <a href="/" class="brand">NUBILUM</a>
-      <div class="nav">
-        <a href="/" class="active">Inicio</a>
-        <a href="/projects-page">Proyectos</a>
-      </div>
-    </div>
+    <header class="landing-topbar">
+      <a href="/" class="landing-brand">Nubilum</a>
+    </header>
 
-    <!-- =====================================================
-         HERO PRINCIPAL
-         ===================================================== -->
-    <div class="hero">
-      <h1>NUBILUM</h1>
-      <p class="hero-subtitle">
-        Sube, reduce, limpia y prepara nubes de puntos 3D de forma sencilla.
-        La plataforma está pensada para visualizar archivos pesados, generar
-        versiones más ligeras y dejar la nube lista para futuras tareas como
-        clasificación de superficies o división por zonas.
-      </p>
-
-      <div class="hero-actions">
-        <a href="/upload-page" class="primary-btn">Subir archivo nuevo</a>
-        <a href="/projects-page" class="secondary-btn">Abrir proyectos</a>
-      </div>
-    </div>
-
-    <!-- =====================================================
-         BLOQUES INFORMATIVOS
-         ===================================================== -->
-    <div class="info-grid">
-      <div class="info-box">
-        <h3>¿Qué puede hacer la plataforma?</h3>
-        <ul>
-          <li>Reducir una nube de puntos para que cargue más rápido.</li>
-          <li>Eliminar parte del ruido o puntos erróneos.</li>
-          <li>Visualizar una versión más ligera en 3D.</li>
-          <li>Preparar la nube para clasificar superficies como suelo, pared o techo.</li>
-          <li>Guardar el trabajo por proyectos para revisarlo más tarde.</li>
-        </ul>
-      </div>
-
-      <div class="info-box">
-        <h3>Formatos admitidos</h3>
-        <ul>
-          <li><b>.xyz</b></li>
-          <li><b>.pts</b></li>
-          <li><b>.ply</b></li>
-          <li><b>.pcd</b></li>
-          <li><b>.las</b> y <b>.laz</b></li>
-        </ul>
+    <main class="landing-main">
+      <section class="landing-hero">
+        <h1>
+          Gestión Profesional de<br>
+          <span>Nubes de Puntos</span>
+        </h1>
         <p>
-          Si el archivo incluye color RGB, la plataforma intentará conservarlo
-          en la visualización. Para una experiencia más fluida, se recomienda
-          trabajar con nubes reducidas o ya procesadas cuando el archivo sea muy grande.
+          Sube, procesa y visualiza tus proyectos de escaneado 3D con
+          tecnología de vanguardia.
         </p>
-      </div>
-    </div>
+      </section>
 
-    <!-- =====================================================
-         BLOQUE DE AYUDA
-         ===================================================== -->
-    <div class="card">
-      <h2>Cómo funciona</h2>
-      <p class="muted">
-        El flujo recomendado es muy simple:
-      </p>
-      <div class="spacer-top">
-        <span class="badge">1. Subir archivo</span>
-        <span class="badge">2. Ajustar parámetros</span>
-        <span class="badge">3. Procesar</span>
-        <span class="badge">4. Abrir proyectos</span>
-        <span class="badge">5. Clasificar y visualizar</span>
-      </div>
-      <p class="helper">
-        La carga y el preprocesado se realizan desde la página de subida.
-        La visualización, clasificación por clases y descarga de resultados
-        se gestionan desde la página de proyectos.
-      </p>
-    </div>
+      <section class="landing-cards">
+        <a href="/upload-page" class="landing-card">
+          <div class="landing-card-icon blue">↑</div>
+          <h2>Subir Archivo Nuevo</h2>
+          <p>
+            Carga nuevos archivos de nubes de puntos, configura parámetros
+            de procesado y lanza la clasificación.
+          </p>
+          <span>Comenzar</span>
+        </a>
 
+        <a href="/projects-page" class="landing-card">
+          <div class="landing-card-icon dark">▣</div>
+          <h2>Abrir Proyectos</h2>
+          <p>
+            Accede a tus archivos y proyectos ya subidos, visualiza resultados
+            y gestiona tu biblioteca.
+          </p>
+          <span>Ver proyectos</span>
+        </a>
+      </section>
+
+      <section class="landing-features">
+        <div>
+          <strong>Rápido</strong>
+          <span>Procesado optimizado</span>
+        </div>
+        <div>
+          <strong>Preciso</strong>
+          <span>Clasificación avanzada</span>
+        </div>
+        <div>
+          <strong>Intuitivo</strong>
+          <span>Interfaz profesional</span>
+        </div>
+      </section>
+    </main>
   </div>
 </body>
 </html>
