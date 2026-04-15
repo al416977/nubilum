@@ -7,86 +7,101 @@
   <link rel="stylesheet" href="/static/styles.css" />
 </head>
 <body>
-  <div class="page">
+  <div class="page projects-page">
 
     <!-- =====================================================
-         BARRA SUPERIOR DE NAVEGACIÓN
+         BARRA SUPERIOR
          ===================================================== -->
     <div class="topbar">
       <a href="/" class="brand">NUBILUM</a>
-      <nav>
+      <div class="nav">
         <a href="/">Inicio</a>
         <a href="/projects-page" class="active">Proyectos</a>
-      </nav>
+      </div>
     </div>
 
     <!-- =====================================================
-         CABECERA DE LA PÁGINA
+         CABECERA
          ===================================================== -->
-    <div class="card">
-      <h2>Proyectos procesados</h2>
-      <p class="muted">
-          Aquí puedes abrir los resultados generados para cada proyecto,
-          visualizar la nube con sus colores originales, verla por colores según las clases obtenidas,
-          consultar el resumen del proceso y descargar los archivos disponibles.
-      </p>
+    <div class="projects-header-card">
+      <div class="projects-header-copy">
+        <h1>Proyectos procesados</h1>
+        <p>
+          Aquí puedes abrir los resultados generados para cada proyecto, visualizar la nube
+          con sus colores originales, verla por colores según las clases obtenidas, consultar
+          el resumen del proceso y descargar los archivos disponibles.
+        </p>
+      </div>
 
-      <div class="button-row">
-        <button onclick="window.loadProjects()">Recargar proyectos</button>
-        <a href="/" class="button-link button-secondary">Volver a la subida de archivos</a>      </div>
+      <div class="projects-header-actions">
+        <button class="primary-btn" onclick="window.loadProjects()">Recargar proyectos</button>
+        <a href="/upload-page" class="secondary-btn">Volver a subida</a>
+      </div>
     </div>
 
     <!-- =====================================================
-         LISTA DE PROYECTOS
+         LAYOUT PRINCIPAL
          ===================================================== -->
-    <div class="card">
-      <h2>Lista de proyectos</h2>
-      <div id="projects"></div>
-    </div>
+    <div class="projects-layout">
 
-    <!-- =====================================================
-         VISOR 3D
-         ===================================================== -->
-    <div class="card">
-      <h2>Visor 3D</h2>
-      <p class="muted">
-        Aquí puedes explorar visualmente la nube cargada, ya sea con sus colores originales
-  o coloreada según las clases detectadas. Si la ves demasiado pequeña o demasiado densa,
-  ajusta el tamaño de visualización de los puntos.
-      </p>
-
-      <div class="button-row" style="align-items: center;">
-        <label for="pointSizeSlider" style="margin: 0;">Tamaño de visualización de los puntos</label>
-        <input
-          type="range"
-          id="pointSizeSlider"
-          min="0.001"
-          max="0.02"
-          step="0.0005"
-          value="0.006"
-          oninput="window.updatePointSize(this.value)"
-          style="width: 220px;"
-        />
-        <span id="pointSizeValue">0.006</span>
-        <button onclick="window.resetViewerCamera()">Reiniciar cámara</button>
-        <button id="fullscreenBtn" onclick="window.toggleViewerFullscreen()">Pantalla completa</button>
+      <!-- =====================================================
+           COLUMNA IZQUIERDA: PROYECTOS
+           ===================================================== -->
+      <div class="projects-left">
+        <div class="card projects-list-card">
+          <h2>Lista de proyectos</h2>
+          <div id="projects"></div>
+        </div>
       </div>
 
-      <div id="viewerWrapper" class="viewer-wrapper">
-        <div id="viewer" class="viewer-box"></div>
-      </div>
-      </div>
+      <!-- =====================================================
+           COLUMNA DERECHA: VISOR + INFO
+           ===================================================== -->
+      <div class="projects-right">
+        <div class="card viewer-card">
+          <div class="viewer-header">
+            <div>
+              <h2>Visor 3D</h2>
+              <p class="muted">
+                Explora visualmente la nube cargada y ajusta el tamaño de los puntos si lo necesitas.
+              </p>
+            </div>
+          </div>
 
-    <!-- =====================================================
-         MENSAJES DEL SISTEMA
-         ===================================================== -->
-    <div class="card">
-      <h2>Información del proceso</h2>
-      <div id="output" class="output-box">
+          <div class="viewer-toolbar">
+            <div class="viewer-toolbar-group">
+              <label for="pointSizeSlider">Tamaño de puntos</label>
+              <input
+                type="range"
+                id="pointSizeSlider"
+                min="0.001"
+                max="0.02"
+                step="0.0005"
+                value="0.006"
+                oninput="window.updatePointSize(this.value)"
+              />
+              <span id="pointSizeValue">0.006</span>
+            </div>
+
+            <div class="viewer-toolbar-actions">
+              <button class="secondary-btn" onclick="window.resetViewerCamera()">Reiniciar cámara</button>
+              <button class="primary-btn" id="fullscreenBtn" onclick="window.toggleViewerFullscreen()">Pantalla completa</button>
+            </div>
+          </div>
+
+          <div id="viewerWrapper" class="viewer-wrapper">
+            <div id="viewer" class="viewer-box"></div>
+          </div>
+        </div>
+
+        <div class="card process-info-card">
+          <h2>Información del proceso</h2>
+          <div id="output" class="output-box">
 Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema.
+          </div>
+        </div>
       </div>
     </div>
-
   </div>
 
   <script type="importmap">
@@ -106,10 +121,6 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
     const API_BASE = "";
     
     async function loadProjects() {
-      /**
-       * Carga todos los proyectos procesados desde el backend
-       * y los muestra como tarjetas.
-       */
       const projectsDiv = document.getElementById("projects");
       projectsDiv.innerHTML = "Cargando proyectos...";
 
@@ -123,60 +134,72 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
         }
 
         projectsDiv.innerHTML = data.projects.map(project => `
-          <div class="project-card">
-            <div class="project-title">${project.name}</div>
-
-            <p class="helper">
-              Proyecto procesado con archivos disponibles para visualización, consulta y descarga.
-            </p>
-
-            <div class="section-title">Visualizar</div>
-            <div class="actions">
-              ${project.quick_view_file
-                ? `<button onclick="window.viewProjectQuickView('${project.name}', '${project.quick_view_file}')">Ver nube con colores originales</button>`
-                : ""}
-              ${project.quick_view_file
-                ? `<button onclick="window.viewProcessedFile('${project.name}', '${project.quick_view_file}', 'nube rápida')">Ver nube rápida</button>`
-                : ""}
-              ${project.filtered_file
-                ? `<button onclick="window.viewProcessedFile('${project.name}', '${project.filtered_file}', 'nube sin reducir')">Ver nube sin reducir</button>`
-                : ""}
-              <button onclick="window.classifyProject('${project.name}')">Generar clases</button>
-              ${project.pseudo_label_file
-                ? `<button onclick="window.viewPseudoLabels('${project.name}', '${project.pseudo_label_file}')">Ver nube por clases</button>`
-                : ""}
-              ${project.pseudo_label_file
-                ? `<button onclick="window.downloadAIFile('${project.name}', '${project.pseudo_label_file}')">Descargar nube por clases</button>`
-                : ""}
+          <div class="project-card project-card-modern">
+            <div class="project-card-top">
+              <div>
+                <div class="project-title">${project.name}</div>
+                <p class="helper">
+                  Proyecto procesado con archivos disponibles para visualización, consulta y descarga.
+                </p>
+              </div>
+              <span class="badge">Procesado</span>
             </div>
 
-            <div class="section-title">Consultar</div>
-            <div class="actions">
-              <button onclick="window.loadProjectReport('${project.name}')">Ver resumen</button>
+            <div class="project-section">
+              <div class="section-title">Visualizar</div>
+              <div class="actions">
+                ${project.quick_view_file
+                  ? `<button class="action-btn" onclick="window.viewProjectQuickView('${project.name}', '${project.quick_view_file}')">Ver nube con colores originales</button>`
+                  : ""}
+                ${project.quick_view_file
+                  ? `<button class="action-btn" onclick="window.viewProcessedFile('${project.name}', '${project.quick_view_file}', 'nube rápida')">Ver nube rápida</button>`
+                  : ""}
+                ${project.filtered_file
+                  ? `<button class="action-btn" onclick="window.viewProcessedFile('${project.name}', '${project.filtered_file}', 'nube sin reducir')">Ver nube sin reducir</button>`
+                  : ""}
+                <button class="action-btn primary-action" onclick="window.classifyProject('${project.name}')">Generar clases</button>
+                ${project.pseudo_label_file
+                  ? `<button class="action-btn" onclick="window.viewPseudoLabels('${project.name}', '${project.pseudo_label_file}')">Ver nube por clases</button>`
+                  : ""}
+                ${project.pseudo_label_file
+                  ? `<button class="action-btn" onclick="window.downloadAIFile('${project.name}', '${project.pseudo_label_file}')">Descargar nube por clases</button>`
+                  : ""}
+              </div>
             </div>
 
-            <div class="section-title">Descargar</div>
-            <div class="actions">
-              ${project.quick_view_file
-                ? `<button onclick="window.downloadProjectFile('${project.name}', '${project.quick_view_file}')">Descargar versión reducida</button>`
-                : ""}
-
-              ${project.filtered_file
-                ? `<button onclick="window.downloadProjectFile('${project.name}', '${project.filtered_file}')">Descargar nube limpia</button>`
-                : ""}
-
-              ${project.report_file
-                ? `<button onclick="window.downloadProjectFile('${project.name}', '${project.report_file}')">Descargar resumen</button>`
-                : ""}
+            <div class="project-section">
+              <div class="section-title">Consultar</div>
+              <div class="actions">
+                <button class="action-btn" onclick="window.loadProjectReport('${project.name}')">Ver resumen</button>
+              </div>
             </div>
 
-            <div class="section-title">Archivos disponibles</div>
-            <ul class="project-files">
-              ${project.filtered_file ? `<li>${project.filtered_file}</li>` : ""}
-              ${project.quick_view_file ? `<li>${project.quick_view_file}</li>` : ""}
-              ${project.report_file ? `<li>${project.report_file}</li>` : ""}
-              ${project.pseudo_label_file ? `<li>${project.pseudo_label_file}</li>` : ""}
-            </ul>
+            <div class="project-section">
+              <div class="section-title">Descargar</div>
+              <div class="actions">
+                ${project.quick_view_file
+                  ? `<button class="action-btn" onclick="window.downloadProjectFile('${project.name}', '${project.quick_view_file}')">Descargar versión reducida</button>`
+                  : ""}
+
+                ${project.filtered_file
+                  ? `<button class="action-btn" onclick="window.downloadProjectFile('${project.name}', '${project.filtered_file}')">Descargar nube limpia</button>`
+                  : ""}
+
+                ${project.report_file
+                  ? `<button class="action-btn" onclick="window.downloadProjectFile('${project.name}', '${project.report_file}')">Descargar resumen</button>`
+                  : ""}
+              </div>
+            </div>
+
+            <div class="project-section">
+              <div class="section-title">Archivos disponibles</div>
+              <ul class="project-files">
+                ${project.filtered_file ? `<li>${project.filtered_file}</li>` : ""}
+                ${project.quick_view_file ? `<li>${project.quick_view_file}</li>` : ""}
+                ${project.report_file ? `<li>${project.report_file}</li>` : ""}
+                ${project.pseudo_label_file ? `<li>${project.pseudo_label_file}</li>` : ""}
+              </ul>
+            </div>
           </div>
         `).join("");
       } catch (error) {
@@ -185,18 +208,18 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
     }
 
     async function loadProjectReport(projectName) {
-    const output = document.getElementById("output");
-    output.textContent = `Cargando resumen de ${projectName}...`;
+      const output = document.getElementById("output");
+      output.textContent = `Cargando resumen de ${projectName}...`;
 
-    try {
-      const res = await fetch(`${API_BASE}/report?file_stem=${encodeURIComponent(projectName)}`);
-      const data = await res.json();
+      try {
+        const res = await fetch(`${API_BASE}/report?file_stem=${encodeURIComponent(projectName)}`);
+        const data = await res.json();
 
-      if (!res.ok) {
-        throw new Error(data.detail || "No se pudo cargar el resumen");
-      }
+        if (!res.ok) {
+          throw new Error(data.detail || "No se pudo cargar el resumen");
+        }
 
-      output.innerHTML = `
+        output.innerHTML = `
   <div class="result-compact">
     <div><b>Proyecto:</b> ${projectName}</div><br>
 
@@ -209,54 +232,52 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
     <div><b>Reducción tras limpieza:</b> ${data.filter_reduction_percent}%</div>
     <div><b>Reducción en versión reducida:</b> ${data.quick_view_reduction_percent}%</div>
   </div>
-      `;
-    } catch (error) {
-      output.textContent = `Error cargando el resumen del proyecto: ${error.message}`;
+        `;
+      } catch (error) {
+        output.textContent = `Error cargando el resumen del proyecto: ${error.message}`;
+      }
     }
-  }
 
-  window.classifyProject = async function(projectName) {
-    const output = document.getElementById("output");
-    output.textContent = `Generando clases para ${projectName}...`;
-
-    try {
-      const res = await fetch(`${API_BASE}/classify?project=${encodeURIComponent(projectName)}`, {
-        method: "POST"
-      });
-
-      const rawText = await res.text();
-      let data = {};
+    window.classifyProject = async function(projectName) {
+      const output = document.getElementById("output");
+      output.textContent = `Generando clases para ${projectName}...`;
 
       try {
-        data = rawText ? JSON.parse(rawText) : {};
-      } catch {
-        data = { detail: rawText || `Respuesta vacía del servidor (HTTP ${res.status})` };
-      }
+        const res = await fetch(`${API_BASE}/classify?project=${encodeURIComponent(projectName)}`, {
+          method: "POST"
+        });
 
-      if (!res.ok) {
-        throw new Error(data.detail || `Error al clasificar (HTTP ${res.status})`);
-      }
+        const rawText = await res.text();
+        let data = {};
 
-      output.innerHTML = `
+        try {
+          data = rawText ? JSON.parse(rawText) : {};
+        } catch {
+          data = { detail: rawText || `Respuesta vacía del servidor (HTTP ${res.status})` };
+        }
+
+        if (!res.ok) {
+          throw new Error(data.detail || `Error al clasificar (HTTP ${res.status})`);
+        }
+
+        output.innerHTML = `
   <b>Clasificación completada</b>
 
   Proyecto: ${projectName}
 
   Ya puedes recargar la lista y abrir la nube por clases.
-      `;
+        `;
 
-      loadProjects();
-    } catch (error) {
-      output.textContent = `Error generando clases para ${projectName}: ${error.message}`;
-    }
-  };
+        loadProjects();
+      } catch (error) {
+        output.textContent = `Error generando clases para ${projectName}: ${error.message}`;
+      }
+    };
 
-  let scene, camera, renderer, pointsObject, controls;
-  let currentPointSize = 0.006;
+    let scene, camera, renderer, pointsObject, controls;
+    let currentPointSize = 0.006;
+
     function initViewer() {
-      /**
-       * Inicializa la escena 3D con Three.js.
-       */
       const container = document.getElementById("viewer");
 
       scene = new THREE.Scene();
@@ -300,10 +321,7 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
     function animate() {
       requestAnimationFrame(animate);
 
-      if (controls) {
-        controls.update();
-      }
-
+      if (controls) controls.update();
       renderer.render(scene, camera);
     }
 
@@ -315,6 +333,7 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
       camera.updateProjectionMatrix();
       renderer.setSize(container.clientWidth, container.clientHeight);
     }
+
     function toggleViewerFullscreen() {
       const wrapper = document.getElementById("viewerWrapper");
       const button = document.getElementById("fullscreenBtn");
@@ -339,28 +358,23 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
           });
       }
     }
+
     function downloadAIFile(projectName, fileName) {
       const url = `${API_BASE}/download-ai-file?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`;
       window.open(url, "_blank");
     }
+
     async function viewProjectQuickView(projectName, fileName) {
-      /**
-       * Carga la versión reducida del proyecto en el visor 3D.
-       */
       const output = document.getElementById("output");
       output.textContent = `Cargando versión reducida de ${projectName}...`;
 
       try {
-        if (!renderer) {
-          initViewer();
-        }
+        if (!renderer) initViewer();
 
         const url = `${API_BASE}/view-file?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`;
         const response = await fetch(url);
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const buffer = await response.arrayBuffer();
         const loader = new PLYLoader();
@@ -387,9 +401,7 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
           let maxValue = 0;
 
           for (let i = 0; i < colorAttr.array.length; i++) {
-            if (colorAttr.array[i] > maxValue) {
-              maxValue = colorAttr.array[i];
-            }
+            if (colorAttr.array[i] > maxValue) maxValue = colorAttr.array[i];
           }
 
           if (maxValue > 1) {
@@ -399,6 +411,7 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
             colorAttr.needsUpdate = true;
           }
         }
+
         const material = new THREE.PointsMaterial({
           size: currentPointSize,
           vertexColors: hasColor,
@@ -429,27 +442,24 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
   <div><b>Archivo:</b> ${fileName}</div>
   <div><b>Puntos cargados:</b> ${geometry.attributes.position.count}</div>
   <div><b>Colores detectados:</b> ${hasColor ? "sí" : "no"}</div>
-</div>        
-    `;
+</div>
+        `;
       } catch (error) {
         output.textContent = `Error cargando la nube con colores originales de ${projectName}: ${error.message}`;
       }
     }
+
     async function viewProcessedFile(projectName, fileName, label = "archivo procesado") {
       const output = document.getElementById("output");
       output.textContent = `Cargando ${label} de ${projectName}...`;
 
       try {
-        if (!renderer) {
-          initViewer();
-        }
+        if (!renderer) initViewer();
 
         const url = `${API_BASE}/view-file?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`;
         const response = await fetch(url);
 
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
 
         const buffer = await response.arrayBuffer();
         const loader = new PLYLoader();
@@ -476,9 +486,7 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
           let maxValue = 0;
 
           for (let i = 0; i < colorAttr.array.length; i++) {
-            if (colorAttr.array[i] > maxValue) {
-              maxValue = colorAttr.array[i];
-            }
+            if (colorAttr.array[i] > maxValue) maxValue = colorAttr.array[i];
           }
 
           if (maxValue > 1) {
@@ -525,19 +533,13 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
         output.textContent = `Error cargando ${label} de ${projectName}: ${error.message}`;
       }
     }
-    window.viewProcessedFile = viewProcessedFile;
 
     function viewPseudoLabels(projectName, fileName) {
-      /**
-       * Carga el archivo de pseudoetiquetas o clasificación de superficies.
-       */
       const output = document.getElementById("output");
       output.textContent = `Cargando nube por clases de ${projectName}...`;
 
       try {
-        if (!renderer) {
-          initViewer();
-        }
+        if (!renderer) initViewer();
 
         const url = `${API_BASE}/view-ai-file?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`;
         const loader = new PLYLoader();
@@ -566,9 +568,7 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
               let maxValue = 0;
 
               for (let i = 0; i < colorAttr.array.length; i++) {
-                if (colorAttr.array[i] > maxValue) {
-                  maxValue = colorAttr.array[i];
-                }
+                if (colorAttr.array[i] > maxValue) maxValue = colorAttr.array[i];
               }
 
               if (maxValue > 1) {
@@ -578,6 +578,7 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
                 colorAttr.needsUpdate = true;
               }
             }
+
             const material = new THREE.PointsMaterial({
               size: currentPointSize,
               vertexColors: hasColor,
@@ -624,28 +625,18 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
     }
 
     function downloadProjectFile(projectName, fileName) {
-      /**
-       * Descarga un archivo asociado al proyecto.
-       */
       const url = `${API_BASE}/download?project=${encodeURIComponent(projectName)}&file_name=${encodeURIComponent(fileName)}`;
       window.open(url, "_blank");
     }
 
     function resetViewerCamera() {
-      /**
-       * Reinicia la cámara a una vista general.
-       */
       if (!camera || !controls) return;
-
       camera.position.set(0, 0, 50);
       controls.target.set(0, 0, 0);
       controls.update();
     }
 
     function updatePointSize(newSize) {
-      /**
-       * Cambia el tamaño visual de los puntos cargados.
-       */
       currentPointSize = parseFloat(newSize);
 
       const valueLabel = document.getElementById("pointSizeValue");
@@ -670,12 +661,14 @@ Aquí aparecerán los mensajes, resúmenes, confirmaciones y errores del sistema
       }
       setTimeout(() => onWindowResize(), 100);
     });
+
     loadProjects();
 
     window.loadProjects = loadProjects;
     window.loadProjectReport = loadProjectReport;
     window.downloadProjectFile = downloadProjectFile;
     window.viewProjectQuickView = viewProjectQuickView;
+    window.viewProcessedFile = viewProcessedFile;
     window.toggleViewerFullscreen = toggleViewerFullscreen;
     window.updatePointSize = updatePointSize;
     window.resetViewerCamera = resetViewerCamera;
