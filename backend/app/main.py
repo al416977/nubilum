@@ -87,23 +87,51 @@ def list_files():
     return {"files": files}
 
 
+MAX_UPLOAD_MB = 200
+
+
 @app.post("/upload")
 def upload_file(file: UploadFile = File(...)):
-    allowed_ext = {".xyz", ".pts", ".ply", ".pcd", ".las", ".laz"}
-    suffix = Path(file.filename).suffix.lower()
+    try:
+        allowed_ext = {".xyz", ".pts", ".ply", ".pcd", ".las", ".laz"}
+        suffix = Path(file.filename).suffix.lower()
 
-    if suffix not in allowed_ext:
-        raise HTTPException(status_code=400, detail=f"Formato no permitido: {suffix}")
+        if suffix not in allowed_ext:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Formato no permitido: {suffix}"
+            )
 
-    save_path = RAW_DIR / file.filename
-    with open(save_path, "wb") as f:
-        f.write(file.file.read())
+        content = file.file.read()
+        size_mb = len(content) / (1024 * 1024)
 
-    return {
-        "message": "Archivo subido correctamente",
-        "file_name": file.filename,
-        "saved_to": str(save_path)
-    }
+        if size_mb > MAX_UPLOAD_MB:
+            raise HTTPException(
+                status_code=413,
+                detail=f"El archivo pesa {size_mb:.1f} MB y supera el límite recomendado de {MAX_UPLOAD_MB} MB para esta versión web."
+            )
+
+        save_path = RAW_DIR / file.filename
+        save_path.parent.mkdir(parents=True, exist_ok=True)
+
+        with open(save_path, "wb") as f:
+            f.write(content)
+
+        return {
+            "message": "Archivo subido correctamente",
+            "file_name": file.filename,
+            "saved_to": str(save_path),
+            "size_mb": round(size_mb, 2)
+        }
+
+    except HTTPException:
+        raise
+    except Exception as e:
+        traceback.print_exc()
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error guardando el archivo: {str(e)}"
+        )
 
 
 # =====================================================
