@@ -18,83 +18,79 @@ def load_point_cloud(file_path: Path):
     """
     Carga una nube de puntos desde disco.
 
-    Soporta especialmente archivos .xyz con dos variantes:
-    - x y z
-    - x y z r g b
+    Soporta:
+    - .xyz
+    - .pts
+    - fallback general con Open3D
 
-    Además, intenta manejar archivos que tengan una cabecera
-    en la primera línea, como por ejemplo:
-    X Y Z R G B
-
-    Parámetros
-    ----------
-    file_path : Path
-        Ruta del archivo a cargar.
-
-    Devuelve
-    --------
-    o3d.geometry.PointCloud
-        Nube de puntos cargada.
+    Devuelve siempre una nube válida o lanza un error claro.
     """
     suffix = file_path.suffix.lower()
+    errores = []
 
     # ------------------------------------------------------------
-    # Caso especial para .xyz
+    # Caso .xyz
     # ------------------------------------------------------------
     if suffix == ".xyz":
-        # Intento 1:
-        # Cargar el archivo saltando una posible cabecera
+        for skiprows in (1, 0):
+            try:
+                data = np.loadtxt(file_path, skiprows=skiprows)
+
+                if data.ndim != 2 or data.shape[1] < 3:
+                    raise ValueError(f"Formato XYZ no válido. shape={getattr(data, 'shape', None)}")
+
+                pcd = o3d.geometry.PointCloud()
+                pcd.points = o3d.utility.Vector3dVector(data[:, :3])
+
+                if data.shape[1] >= 6:
+                    colors = data[:, 3:6].astype(float)
+                    if colors.max() > 1.0:
+                        colors = colors / 255.0
+                    pcd.colors = o3d.utility.Vector3dVector(colors[:, :3])
+
+                return pcd
+
+            except Exception as e:
+                errores.append(f".xyz con skiprows={skiprows}: {e}")
+
+    # ------------------------------------------------------------
+    # Caso .pts
+    # ------------------------------------------------------------
+    if suffix == ".pts":
         try:
             data = np.loadtxt(file_path, skiprows=1)
 
-            # Si tiene 6 o más columnas: x y z r g b
-            if data.ndim == 2 and data.shape[1] >= 6:
-                pcd = o3d.geometry.PointCloud()
-                pcd.points = o3d.utility.Vector3dVector(data[:, :3])
+            if data.ndim != 2 or data.shape[1] < 3:
+                raise ValueError(f"Formato PTS no válido. shape={getattr(data, 'shape', None)}")
 
+            pcd = o3d.geometry.PointCloud()
+            pcd.points = o3d.utility.Vector3dVector(data[:, :3])
+
+            if data.shape[1] >= 6:
                 colors = data[:, 3:6].astype(float)
-
-                # Si el color viene en rango 0-255, lo normalizamos a 0-1
                 if colors.max() > 1.0:
                     colors = colors / 255.0
-
                 pcd.colors = o3d.utility.Vector3dVector(colors[:, :3])
-                return pcd
 
-            # Si tiene solo 3 o más columnas: x y z
-            elif data.ndim == 2 and data.shape[1] >= 3:
-                pcd = o3d.geometry.PointCloud()
-                pcd.points = o3d.utility.Vector3dVector(data[:, :3])
-                return pcd
+            return pcd
 
-        except Exception:
-            # Si falla, seguimos con otro intento
-            pass
+        except Exception as e:
+            errores.append(f".pts manual: {e}")
 
-        # Intento 2:
-        # Cargar el archivo sin saltar cabecera
-        try:
-            data = np.loadtxt(file_path)
+    # ------------------------------------------------------------
+    # Fallback general con Open3D
+    # ------------------------------------------------------------
+    try:
+        pcd = o3d.io.read_point_cloud(str(file_path))
+        if pcd is not None and len(pcd.points) > 0:
+            return pcd
+        errores.append("Open3D devolvió una nube vacía o None")
+    except Exception as e:
+        errores.append(f"Open3D fallback: {e}")
 
-            if data.ndim == 2 and data.shape[1] >= 6:
-                pcd = o3d.geometry.PointCloud()
-                pcd.points = o3d.utility.Vector3dVector(data[:, :3])
-
-                colors = data[:, 3:6].astype(float)
-
-                if colors.max() > 1.0:
-                    colors = colors / 255.0
-
-                pcd.colors = o3d.utility.Vector3dVector(colors[:, :3])
-                return pcd
-
-            elif data.ndim == 2 and data.shape[1] >= 3:
-                pcd = o3d.geometry.PointCloud()
-                pcd.points = o3d.utility.Vector3dVector(data[:, :3])
-                return pcd
-
-        except Exception:
-            pass
+    raise ValueError(
+        f"No se pudo cargar la nube '{file_path.name}'. Detalles: {' | '.join(errores)}"
+    )
 
     # ------------------------------------------------------------
     # Resto de formatos o fallback general de Open3D
