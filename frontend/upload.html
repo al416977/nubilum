@@ -48,7 +48,7 @@
           <label for="fileInput" class="upload-dropzone">
             <div class="upload-dropzone-icon">↑</div>
             <div class="upload-dropzone-title">Arrastra un archivo o haz clic para seleccionar</div>
-            <div class="upload-dropzone-subtitle">Formatos soportados: LAS, LAZ, E57, PTS, XYZ</div>
+            <div class="upload-dropzone-subtitle">Formatos soportados: LAS, LAZ, PTS, XYZ, PLY, PCD</div>
           </label>
 
           <input type="file" id="fileInput" hidden />
@@ -116,10 +116,6 @@
               <span>LAS comprimido</span>
             </div>
 
-            <div class="upload-format-item">
-              <strong>.E57</strong>
-              <span>Formato de intercambio 3D</span>
-            </div>
 
             <div class="upload-format-item">
               <strong>.PTS</strong>
@@ -133,7 +129,7 @@
           </div>
 
           <div class="upload-limit-box">
-            Tamaño recomendado: archivos moderados en esta versión desplegada
+            Tamaño recomendado: hasta 200 MB en la versión desplegada. Para archivos grandes, usa la versión local.
           </div>
         </div>
 
@@ -199,38 +195,57 @@
     }
 
     uploadBtn.addEventListener("click", async () => {
-      const file = fileInput.files[0];
+  const file = fileInput.files[0];
 
-      if (!file) {
-        uploadStatus.textContent = "Selecciona un archivo antes de subirlo.";
+  if (!file) {
+    uploadStatus.textContent = "Selecciona un archivo antes de subirlo.";
+    return;
+  }
+
+  const maxUploadMB = 200;
+  const fileSizeMB = file.size / (1024 * 1024);
+
+  if (fileSizeMB > maxUploadMB) {
+    uploadStatus.textContent =
+      `El archivo pesa ${fileSizeMB.toFixed(1)} MB. ` +
+      `Supera el límite recomendado de ${maxUploadMB} MB para esta versión web. ` +
+      `Redúcelo o súbelo usando la versión local.`;
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("file", file);
+
+  uploadStatus.textContent = "Subiendo archivo...";
+
+    try {
+      const response = await fetch("/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      const contentType = response.headers.get("content-type") || "";
+      let result = null;
+
+      if (contentType.includes("application/json")) {
+        result = await response.json();
+      } else {
+        const text = await response.text();
+        throw new Error(`Respuesta no JSON (${response.status}): ${text.slice(0, 200)}`);
+      }
+
+      if (!response.ok) {
+        uploadStatus.textContent = result.detail || "Error al subir el archivo.";
         return;
       }
 
-      const formData = new FormData();
-      formData.append("file", file);
-
-      uploadStatus.textContent = "Subiendo archivo...";
-
-      try {
-        const response = await fetch("/upload", {
-          method: "POST",
-          body: formData
-        });
-
-        const result = await response.json();
-
-        if (!response.ok) {
-          uploadStatus.textContent = result.detail || "Error al subir el archivo.";
-          return;
-        }
-
-        uploadStatus.textContent = result.message || "Archivo subido correctamente.";
-        await loadFiles();
-      } catch (error) {
-        console.error(error);
-        uploadStatus.textContent = "Error al subir el archivo.";
-      }
-    });
+      uploadStatus.textContent = result.message || "Archivo subido correctamente.";
+      await loadFiles();
+    } catch (error) {
+      console.error(error);
+      uploadStatus.textContent = `Error al subir el archivo: ${error.message}`;
+    }
+  });
 
     preprocessBtn.addEventListener("click", async () => {
       const selectedFile = fileSelect.value;
