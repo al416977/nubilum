@@ -18,15 +18,30 @@ def load_point_cloud(file_path: Path):
     """
     Carga una nube de puntos desde disco.
 
-    Soporta:
+    Soporta especialmente:
     - .xyz
     - .pts
-    - fallback general con Open3D
+    - fallback general con Open3D para .ply/.pcd y otros compatibles
 
     Devuelve siempre una nube válida o lanza un error claro.
     """
     suffix = file_path.suffix.lower()
     errores = []
+
+    def build_pcd_from_array(data: np.ndarray):
+        if data.ndim != 2 or data.shape[1] < 3:
+            raise ValueError(f"Formato no válido. shape={getattr(data, 'shape', None)}")
+
+        pcd = o3d.geometry.PointCloud()
+        pcd.points = o3d.utility.Vector3dVector(data[:, :3])
+
+        if data.shape[1] >= 6:
+            colors = data[:, 3:6].astype(float)
+            if colors.max() > 1.0:
+                colors = colors / 255.0
+            pcd.colors = o3d.utility.Vector3dVector(colors[:, :3])
+
+        return pcd
 
     # ------------------------------------------------------------
     # Caso .xyz
@@ -35,23 +50,37 @@ def load_point_cloud(file_path: Path):
         for skiprows in (1, 0):
             try:
                 data = np.loadtxt(file_path, skiprows=skiprows)
-
-                if data.ndim != 2 or data.shape[1] < 3:
-                    raise ValueError(f"Formato XYZ no válido. shape={getattr(data, 'shape', None)}")
-
-                pcd = o3d.geometry.PointCloud()
-                pcd.points = o3d.utility.Vector3dVector(data[:, :3])
-
-                if data.shape[1] >= 6:
-                    colors = data[:, 3:6].astype(float)
-                    if colors.max() > 1.0:
-                        colors = colors / 255.0
-                    pcd.colors = o3d.utility.Vector3dVector(colors[:, :3])
-
-                return pcd
-
+                return build_pcd_from_array(data)
             except Exception as e:
                 errores.append(f".xyz con skiprows={skiprows}: {e}")
+
+        # Fallback manual más robusto para cabeceras raras o líneas sucias
+        try:
+            rows = []
+            with open(file_path, "r", encoding="utf-8", errors="ignore") as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+
+                    parts = line.replace(",", " ").split()
+
+                    try:
+                        nums = [float(x) for x in parts]
+                    except ValueError:
+                        continue
+
+                    if len(nums) >= 3:
+                        rows.append(nums[:6])
+
+            if not rows:
+                raise ValueError("No se encontraron filas numéricas válidas en el .xyz")
+
+            data = np.array(rows, dtype=float)
+            return build_pcd_from_array(data)
+
+        except Exception as e:
+            errores.append(f".xyz manual: {e}")
 
     # ------------------------------------------------------------
     # Caso .pts
@@ -59,23 +88,15 @@ def load_point_cloud(file_path: Path):
     if suffix == ".pts":
         try:
             data = np.loadtxt(file_path, skiprows=1)
-
-            if data.ndim != 2 or data.shape[1] < 3:
-                raise ValueError(f"Formato PTS no válido. shape={getattr(data, 'shape', None)}")
-
-            pcd = o3d.geometry.PointCloud()
-            pcd.points = o3d.utility.Vector3dVector(data[:, :3])
-
-            if data.shape[1] >= 6:
-                colors = data[:, 3:6].astype(float)
-                if colors.max() > 1.0:
-                    colors = colors / 255.0
-                pcd.colors = o3d.utility.Vector3dVector(colors[:, :3])
-
-            return pcd
-
+            return build_pcd_from_array(data)
         except Exception as e:
-            errores.append(f".pts manual: {e}")
+            errores.append(f".pts con skiprows=1: {e}")
+
+        try:
+            data = np.loadtxt(file_path)
+            return build_pcd_from_array(data)
+        except Exception as e:
+            errores.append(f".pts con skiprows=0: {e}")
 
     # ------------------------------------------------------------
     # Fallback general con Open3D
@@ -217,8 +238,10 @@ def run_preprocess(
         raise ValueError("El valor de limpieza del ruido debe ser mayor que 0")
     # 1) Carga
     pcd = load_point_cloud(file_path)
-
-    # 2) Validación
+    
+    if pcd is None:
+        raise ValueError("No se pudo cargar la nube de puntos")
+    
     if len(pcd.points) == 0:
         raise ValueError("La nube cargada tiene 0 puntos")
 
